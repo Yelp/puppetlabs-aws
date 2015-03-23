@@ -100,9 +100,12 @@ Puppet::Type.newtype(:ec2_securitygroup) do
   # as otherwise it won't be unique and uniqueness and composite namevars are fun.
   def self.title_patterns
     [
-      [ /^(([\w\-]+)::(default))$/, [ [ :name, lambda {|x| x} ], [ :vpc, lambda {|x| x} ], [ :group_name, lambda {|x| x} ] ] ],
-      [ /^(([\w\-]+))$/, [ [ :name, lambda {|x| x} ], [ :group_name, lambda {|x| x} ] ] ]
-    ]
+      [ /^(([\w\-]+)::(default))$/,
+        [ [ :name, lambda {|x| x} ],
+          [ :vpc, lambda {|x| x} ],
+          [ :group_name, lambda {|x| x} ] ] ],
+      [ /^((.*))$/,
+        [ [ :name, lambda {|x| x} ],
+          [ :group_name, lambda {|x| x} ] ] ] ]
   end
-
 end
