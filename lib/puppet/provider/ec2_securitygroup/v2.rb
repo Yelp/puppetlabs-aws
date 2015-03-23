@@ -1,4 +1,5 @@
 require_relative '../../../puppet_x/puppetlabs/aws.rb'
+require_relative '../../../puppet_x/puppetlabs/aws_ingress_rules_parser'
 
 Puppet::Type.type(:ec2_securitygroup).provide(:v2, :parent => PuppetX::Puppetlabs::Aws) do
   confine feature: :aws
@@ -28,29 +29,9 @@ Puppet::Type.type(:ec2_securitygroup).provide(:v2, :parent => PuppetX::Puppetlab
     end
   end
 
-  def self.format_ingress_rules(client, group)
-    group[:ip_permissions].collect do |rule|
-      if rule.user_id_group_pairs.empty?
-        {
-          'protocol' => rule.ip_protocol,
-          'port' => rule.to_port.to_i,
-          'cidr' => rule.ip_ranges.first.cidr_ip
-        }
-      else
-        rule.user_id_group_pairs.collect do |security_group|
-          name = security_group.group_name
-          if name.nil?
-            group_response = client.describe_security_groups(
-              group_ids: [security_group.group_id]
-            )
-            name = group_response.data.security_groups.first.group_name
-          end
-          {
-            'security_group' => name
-          }
-        end
-      end
-    end.flatten.uniq
+  def self.format_ingress_rules(ec2, group)
+    PuppetX::Puppetlabs::AwsIngressRulesParser.ip_permissions_to_rules_list(
+      ec2, group[:ip_permissions], [group.group_id, group.group_name])
   end
 
   def self.security_group_to_hash(region, group)
@@ -71,12 +52,12 @@ Puppet::Type.type(:ec2_securitygroup).provide(:v2, :parent => PuppetX::Puppetlab
     end
     {
       id: group.group_id,
-      name: group[:group_name],
-      id: group[:group_id],
-      description: group[:description],
+      name: group.group_name,
+      description: group.description,
       ensure: :present,
       ingress: format_ingress_rules(ec2, group),
       vpc: vpc_name,
+      vpc_id: group.vpc_id,
       region: region,
       tags: tags_for(group),
     }
@@ -105,6 +86,8 @@ Puppet::Type.type(:ec2_securitygroup).provide(:v2, :parent => PuppetX::Puppetlab
       vpc_id = vpc_response.data.vpcs.first.vpc_id
       Puppet.warning "Multiple VPCs found called #{vpc_name}, using #{vpc_id}" if vpc_response.data.vpcs.count > 1
       config[:vpc_id] = vpc_id
+      @property_hash[:vpc_id] = vpc_id
+      @property_hash[:vpc] = vpc_name
     end
 
     response = ec2.create_security_group(config)
@@ -123,81 +106,48 @@ Puppet::Type.type(:ec2_securitygroup).provide(:v2, :parent => PuppetX::Puppetlab
   def authorize_ingress(new_rules, existing_rules=[])
     ec2 = ec2_client(resource[:region])
     new_rules = [new_rules] unless new_rules.is_a?(Array)
+    normalized_rules = new_rules.compact.map{|r| normalize_ports r}
 
-    to_create = new_rules - existing_rules
-    to_delete = existing_rules - new_rules
+    to_create = normalized_rules - existing_rules
+    to_delete = existing_rules - normalized_rules
 
+    self_ref  = [@property_hash[:id], name].compact
+    fail "self ref #{self_ref.inspect} must contain id and name" unless self_ref.size == 2
 
-    to_create.reject(&:nil?).each do |rule|
-      if rule.key? 'security_group'
-        source_group_name = rule['security_group']
-        filters = [ {name: 'group-name', values: [source_group_name]} ]
-        if vpc_only_account?
-          response = ec2.describe_security_groups(group_ids: [@property_hash[:id]])
-          vpc_id = response.data.security_groups.first.vpc_id
-          filters.push( {name: 'vpc-id', values: [vpc_id]} )
-        end
-        group_response = ec2.describe_security_groups(filters: filters)
-        match_count = group_response.data.security_groups.count
-        fail("No groups found called #{source_group_name}") if match_count == 0
-        source_group_id = group_response.data.security_groups.first.group_id
-        Puppet.warning "#{match_count} groups found called #{source_group_name}, using #{source_group_id}" if match_count > 1
-
-        permissions = ['tcp', 'udp', 'icmp'].collect do |protocol|
-          {
-            ip_protocol: protocol,
-            to_port: protocol == 'icmp' ? -1 : 65535,
-            from_port: protocol == 'icmp' ? -1 : 1,
-            user_id_group_pairs: [{
-              group_id: source_group_id
-            }]
-          }
-        end
-
-        ec2.authorize_security_group_ingress(
-          group_id: @property_hash[:id],
-          ip_permissions: permissions
-        )
-      else
-        ec2.authorize_security_group_ingress(
-          group_id: @property_hash[:id],
-          ip_permissions: [{
-            ip_protocol: rule['protocol'],
-            to_port: rule['port'].to_i,
-            from_port: rule['port'].to_i,
-            ip_ranges: [{
-              cidr_ip: rule['cidr']
-            }]
-          }]
-        )
-      end
+    to_create.compact.each do |rule|
+      ec2.authorize_security_group_ingress(
+        group_id: @property_hash[:id],
+        ip_permissions:
+          PuppetX::Puppetlabs::AwsIngressRulesParser.rule_to_ip_permission_list(
+            ec2, vpc_only_account?, rule, self_ref))
     end
 
-    to_delete.reject(&:nil?).each do |rule|
-      if rule.key? 'security_group'
-         ec2.revoke_security_group_ingress(
-          group_id: @property_hash[:id],
-          source_security_group_name: rule['security_group']
-        )
-      else
-        ec2.revoke_security_group_ingress(
-          group_id: @property_hash[:id],
-          ip_permissions: [{
-            ip_protocol: rule['protocol'],
-            to_port: rule['port'].to_i,
-            from_port: rule['port'].to_i,
-            ip_ranges: [{
-              cidr_ip: rule['cidr']
-            }]
-          }]
-        )
-      end
+    to_delete.compact.each do |rule|
+      ec2.revoke_security_group_ingress(
+        group_id: @property_hash[:id],
+        ip_permissions: PuppetX::Puppetlabs::AwsIngressRulesParser.rule_to_ip_permission_list(
+          ec2, vpc_only_account?, rule, self_ref))
     end
-
   end
 
   def ingress=(value)
     authorize_ingress(value, @property_hash[:ingress])
+  end
+
+  def normalize_ports(rule)
+    copy = Marshal.load(Marshal.dump(rule))
+
+    port = copy['port']
+    port = if port.is_a? String
+      port.to_i
+    elsif port.is_a? Array
+      port.map {|p| p.is_a?(String) ? p.to_i : p}
+    else
+      port
+    end
+
+    copy['port'] = port if port
+    copy
   end
 
   def destroy
