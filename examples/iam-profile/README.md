@@ -24,10 +24,11 @@ add to this profile.
 
 ```json
 {
-  "Version": "2015-02-13",
+  "Version": "2012-10-17",
   "Statement": [
     {
       "Action": [
+        "ec2:DescribeRegions",
         "ec2:DescribeInstances",
         "ec2:RunInstances",
         "ec2:StartInstances",
@@ -61,7 +62,7 @@ add to this profile.
         "ec2:CreateRouteTable",
         "ec2:DeleteRouteTable",
         "ec2:CreateRoute",
-        "ec2:DescribeSubnet",
+        "ec2:DescribeSubnets",
         "ec2:CreateSubnet",
         "ec2:DeleteSubnet",
         "ec2:AssociateRouteTable",

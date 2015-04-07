@@ -8,6 +8,7 @@ describe type_class do
     [
       :name,
       :instance_initiated_shutdown_behavior,
+      :associate_public_ip_address,
     ]
   end
 
@@ -57,6 +58,11 @@ describe type_class do
     expect(srv[:monitoring]).to eq(:false)
   end
 
+  it 'should default allocating a public ip to false' do
+    srv = type_class.new(:name => 'sample')
+    expect(srv[:associate_public_ip_address]).to eq(:false)
+  end
+
   it 'should default ebs obtimized to false' do
     srv = type_class.new(:name => 'sample')
     expect(srv[:monitoring]).to eq(:false)
@@ -102,4 +108,21 @@ describe type_class do
   it 'should order tags on output' do
     expect(type_class).to order_tags_on_output
   end
+
+  [
+    'name',
+    'region',
+    'security_groups',
+    'key_name',
+    'region',
+    'image_id',
+    'availability_zone',
+    'instance_type',
+    'subnet',
+  ].each do |property|
+    it "should require #{property} to be a string" do
+      expect(type_class).to require_string_for(property)
+    end
+  end
+
 end

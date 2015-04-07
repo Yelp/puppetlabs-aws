@@ -1,4 +1,4 @@
-require_relative '../../../puppet_x/puppetlabs/aws.rb'
+require_relative '../../../puppet_x/puppetlabs/aws'
 require_relative '../../../puppet_x/puppetlabs/aws_ingress_rules_parser'
 
 Puppet::Type.type(:ec2_securitygroup).provide(:v2, :parent => PuppetX::Puppetlabs::Aws) do
@@ -9,13 +9,17 @@ Puppet::Type.type(:ec2_securitygroup).provide(:v2, :parent => PuppetX::Puppetlab
 
   def self.instances
     regions.collect do |region|
-      groups = []
-      ec2_client(region).describe_security_groups.each do |response|
-        response.data.security_groups.collect do |group|
-          groups << new(security_group_to_hash(region, group))
+      begin
+        groups = []
+        ec2_client(region).describe_security_groups.each do |response|
+          response.data.security_groups.collect do |group|
+            groups << new(security_group_to_hash(region, group))
+          end
         end
+        groups
+      rescue StandardError => e
+        raise PuppetX::Puppetlabs::FetchingAWSDataError.new(region, self.resource_type.name.to_s, e.message)
       end
-      groups
     end.flatten
   end
 
@@ -55,9 +59,8 @@ Puppet::Type.type(:ec2_securitygroup).provide(:v2, :parent => PuppetX::Puppetlab
     {
       id: group.group_id,
       name: name,
-      group_name: group[:group_name],
-      id: group[:group_id],
-      description: group[:description],
+      group_name: group.group_name,
+      description: group.description,
       ensure: :present,
       ingress: format_ingress_rules(ec2, group),
       vpc: vpc_name,

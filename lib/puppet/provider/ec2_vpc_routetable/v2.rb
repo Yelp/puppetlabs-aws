@@ -9,13 +9,17 @@ Puppet::Type.type(:ec2_vpc_routetable).provide(:v2, :parent => PuppetX::Puppetla
 
   def self.instances
     regions.collect do |region|
-      response = ec2_client(region).describe_route_tables()
-      tables = []
-      response.data.route_tables.each do |table|
-        hash = route_table_to_hash(region, table)
-        tables << new(hash) if has_name?(hash)
+      begin
+        response = ec2_client(region).describe_route_tables()
+        tables = []
+        response.data.route_tables.each do |table|
+          hash = route_table_to_hash(region, table)
+          tables << new(hash) if has_name?(hash)
+        end
+        tables
+      rescue StandardError => e
+        raise PuppetX::Puppetlabs::FetchingAWSDataError.new(region, self.resource_type.name.to_s, e.message)
       end
-      tables
     end.flatten
   end
 
@@ -31,18 +35,20 @@ Puppet::Type.type(:ec2_vpc_routetable).provide(:v2, :parent => PuppetX::Puppetla
 
   def self.route_to_hash(region, route)
     ec2 = ec2_client(region)
-    gateway = if route.gateway_id == 'local'
-      'local'
-    else
-      begin
-        igw_response = ec2.describe_internet_gateways(internet_gateway_ids: [route.gateway_id])
-        name_from_tag(igw_response.data.internet_gateways.first)
-      rescue Aws::EC2::Errors::InvalidInternetGatewayIDNotFound
+    if route.state == 'active'
+      gateway = if route.gateway_id == 'local'
+        'local'
+      else
         begin
-          vgw_response = ec2.describe_vpn_gateways(vpn_gateway_ids: [route.gateway_id])
-          name_from_tag(vgw_response.data.vpn_gateways.first)
-        rescue Aws::EC2::Errors::InvalidVpnGatewayIDNotFound
-          nil
+          igw_response = ec2.describe_internet_gateways(internet_gateway_ids: [route.gateway_id])
+          name_from_tag(igw_response.data.internet_gateways.first)
+        rescue Aws::EC2::Errors::InvalidInternetGatewayIDNotFound
+          begin
+            vgw_response = ec2.describe_vpn_gateways(vpn_gateway_ids: [route.gateway_id])
+            name_from_tag(vgw_response.data.vpn_gateways.first)
+          rescue Aws::EC2::Errors::InvalidVpnGatewayIDNotFound
+            nil
+          end
         end
       end
     end

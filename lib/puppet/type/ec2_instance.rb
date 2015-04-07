@@ -32,6 +32,7 @@ Puppet::Type.newtype(:ec2_instance) do
     desc 'The name of the instance.'
     validate do |value|
       fail 'Instances must have a name' if value == ''
+      fail 'name should be a String' unless value.is_a?(String)
     end
   end
 
@@ -39,6 +40,9 @@ Puppet::Type.newtype(:ec2_instance) do
     desc 'The security groups to associate the instance.'
     def insync?(is)
       is.to_set == should.to_set
+    end
+    validate do |value|
+      fail 'security_groups should be a String' unless value.is_a?(String)
     end
   end
 
@@ -50,8 +54,20 @@ Puppet::Type.newtype(:ec2_instance) do
     desc 'User data script to execute on new instance.'
   end
 
+  newparam(:associate_public_ip_address) do
+    desc 'Whether to assign a public interface in a VPC.'
+    defaultto :false
+    newvalues(:true, :'false')
+    def insync?(is)
+      is.to_s == should.to_s
+    end
+  end
+
   newproperty(:key_name) do
     desc 'The name of the key pair associated with this instance.'
+    validate do |value|
+      fail 'key_name should be a String' unless value.is_a?(String)
+    end
   end
 
   newproperty(:monitoring) do
@@ -67,6 +83,7 @@ Puppet::Type.newtype(:ec2_instance) do
     desc 'The region in which to launch the instance.'
     validate do |value|
       fail 'region should not contain spaces' if value =~ /\s/
+      fail 'region should be a String' unless value.is_a?(String)
     end
   end
 
@@ -75,6 +92,7 @@ Puppet::Type.newtype(:ec2_instance) do
     validate do |value|
       fail 'image_id should not contain spaces' if value =~ /\s/
       fail 'image_id should not be blank' if value == ''
+      fail 'image_id should be a String' unless value.is_a?(String)
     end
   end
 
@@ -83,6 +101,7 @@ Puppet::Type.newtype(:ec2_instance) do
     validate do |value|
       fail 'availability_zone should not contain spaces' if value =~ /\s/
       fail 'availability_zone should not be blank' if value == ''
+      fail 'availability_zone should be a String' unless value.is_a?(String)
     end
   end
 
@@ -91,6 +110,7 @@ Puppet::Type.newtype(:ec2_instance) do
     validate do |value|
       fail 'instance type should not contains spaces' if value =~ /\s/
       fail 'instance_type should not be blank' if value == ''
+      fail 'instance_type should be a String' unless value.is_a?(String)
     end
   end
 
@@ -145,6 +165,9 @@ Puppet::Type.newtype(:ec2_instance) do
 
   newproperty(:subnet) do
     desc 'The VPC subnet to attach the instance to.'
+    validate do |value|
+      fail 'subnet should be a String' unless value.is_a?(String)
+    end
   end
 
   newproperty(:ebs_optimized) do

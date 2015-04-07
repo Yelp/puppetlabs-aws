@@ -9,18 +9,22 @@ Puppet::Type.type(:ec2_instance).provide(:v2, :parent => PuppetX::Puppetlabs::Aw
 
   def self.instances
     regions.collect do |region|
-      instances = []
-      ec2_client(region).describe_instances(filters: [
-        {name: 'instance-state-name', values: ['pending', 'running', 'stopping', 'stopped']}
-      ]).each do |response|
-        response.data.reservations.each do |reservation|
-          reservation.instances.each do |instance|
-            hash = instance_to_hash(region, instance)
-            instances << new(hash) if has_name?(hash)
+      begin
+        instances = []
+        ec2_client(region).describe_instances(filters: [
+          {name: 'instance-state-name', values: ['pending', 'running', 'stopping', 'stopped']}
+        ]).each do |response|
+          response.data.reservations.each do |reservation|
+            reservation.instances.each do |instance|
+              hash = instance_to_hash(region, instance)
+              instances << new(hash) if has_name?(hash)
+            end
           end
         end
+        instances
+      rescue StandardError => e
+        raise PuppetX::Puppetlabs::FetchingAWSDataError.new(region, self.resource_type.name.to_s, e.message)
       end
-      instances
     end.flatten
   end
 
@@ -221,6 +225,20 @@ Found #{matching_groups.length}:
     config
   end
 
+  def config_with_public_interface(config)
+    if resource[:associate_public_ip_address] == :true
+      config[:network_interfaces] = [{
+        device_index: 0,
+        subnet_id: config[:subnet_id],
+        groups: config[:security_group_ids],
+        associate_public_ip_address: true,
+      }]
+      config[:subnet_id] = nil
+      config[:security_group_ids] = nil
+    end
+    config
+  end
+
   def create
     if stopped?
       restart
@@ -250,6 +268,7 @@ Found #{matching_groups.length}:
       config = config_with_devices(config)
       config = config_with_network_details(config)
       config = config_with_private_ip(config)
+      config = config_with_public_interface(config)
 
       response = ec2.run_instances(config)
 

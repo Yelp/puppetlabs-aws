@@ -9,17 +9,21 @@ Puppet::Type.type(:ec2_vpc_subnet).provide(:v2, :parent => PuppetX::Puppetlabs::
 
   def self.instances
     regions.collect do |region|
-      response = ec2_client(region).describe_subnets()
-      subnets = []
-      response.data.subnets.each do |subnet|
-        hash = subnet_to_hash(region, subnet)
-        subnets << new(hash) if has_name?(hash)
+      begin
+        response = ec2_client(region).describe_subnets()
+        subnets = []
+        response.data.subnets.each do |subnet|
+          hash = subnet_to_hash(region, subnet)
+          subnets << new(hash) if has_name?(hash)
+        end
+        subnets
+      rescue StandardError => e
+        raise PuppetX::Puppetlabs::FetchingAWSDataError.new(region, self.resource_type.name.to_s, e.message)
       end
-      subnets
     end.flatten
   end
 
-  read_only(:cidr_block, :vpc, :region, :route_table, :availability_zone)
+  read_only(:cidr_block, :vpc, :region, :route_table, :availability_zone, :map_public_ip_on_launch)
 
   def self.prefetch(resources)
     instances.each do |prov|
@@ -50,6 +54,7 @@ Puppet::Type.type(:ec2_vpc_subnet).provide(:v2, :parent => PuppetX::Puppetlabs::
       vpc: vpc_name_tag ? vpc_name_tag.value : nil,
       ensure: :present,
       region: region,
+      map_public_ip_on_launch: subnet.map_public_ip_on_launch,
       tags: tags_for(subnet),
     }
   end
@@ -78,6 +83,12 @@ Puppet::Type.type(:ec2_vpc_subnet).provide(:v2, :parent => PuppetX::Puppetlabs::
       ec2.create_tags(
         resources: [subnet_id],
         tags: tags_for_resource,
+      )
+    end
+    if resource[:map_public_ip_on_launch] == :true
+      ec2.modify_subnet_attribute(
+        subnet_id: subnet_id,
+        map_public_ip_on_launch: {value: true}
       )
     end
     route_table_name = resource[:route_table]
