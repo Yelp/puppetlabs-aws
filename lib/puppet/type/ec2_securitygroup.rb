@@ -32,25 +32,19 @@ Puppet::Type.newtype(:ec2_securitygroup) do
     desc 'rules for ingress traffic'
 
     def insync?(is)
-      s = should.map{|rule| normalize_ports(rule)}
-      i = is.map{|rule| normalize_ports(rule)}
+      norm_should = should.map{|rule| normalize_ports(rule)}
+      norm_is = is.map{|rule| normalize_ports(rule)}
 
-      (s - i).empty? && (i - s).empty?
+      (norm_should - norm_is).empty? && (norm_is - norm_should).empty?
     end
 
     def normalize_ports(rule)
+      return rule unless rule['port']
+
       copy = Marshal.load(Marshal.dump(rule))
-
-      port = copy['port']
-      port = if port.is_a? String
-        port.to_i
-      elsif port.is_a? Array
-        port.map {|p| p.is_a?(String) ? p.to_i : p}
-      else
-        port
-      end
-
-      copy['port'] = port if port
+      port = Array(copy['port']).compact.map{|p| "#{p}".to_i}.uniq
+      copy['port'] = port.size == 1 ? port.first : port
+      copy.delete 'port' if port.size == 0
       copy
     end
 
