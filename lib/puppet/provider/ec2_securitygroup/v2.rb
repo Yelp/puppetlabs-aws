@@ -121,19 +121,19 @@ Puppet::Type.type(:ec2_securitygroup).provide(:v2, :parent => PuppetX::Puppetlab
     self_ref  = [@property_hash[:id], name].compact
     fail "self ref #{self_ref.inspect} must contain id and name" unless self_ref.size == 2
 
+    to_delete.compact.each do |rule|
+      ec2.revoke_security_group_ingress(
+        group_id: @property_hash[:id],
+        ip_permissions: PuppetX::Puppetlabs::AwsIngressRulesParser.rule_to_ip_permission_list(
+          ec2, vpc_only_account?, rule, self_ref))
+    end
+
     to_create.compact.each do |rule|
       ec2.authorize_security_group_ingress(
         group_id: @property_hash[:id],
         ip_permissions:
           PuppetX::Puppetlabs::AwsIngressRulesParser.rule_to_ip_permission_list(
             ec2, vpc_only_account?, rule, self_ref))
-    end
-
-    to_delete.compact.each do |rule|
-      ec2.revoke_security_group_ingress(
-        group_id: @property_hash[:id],
-        ip_permissions: PuppetX::Puppetlabs::AwsIngressRulesParser.rule_to_ip_permission_list(
-          ec2, vpc_only_account?, rule, self_ref))
     end
   end
 
