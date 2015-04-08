@@ -25,13 +25,13 @@ describe PuppetX::Puppetlabs::AwsIngressRulesParser do
     cidr_port_range:        { 'port' => [10, 100], 'cidr' => '0.0.0.0/8' } }
 
   VPC_IP_PERMISSION_LISTS = {
-    sg_self:                [ { ip_protocol: '-1', from_port: -1, to_port: -1,
+    sg_self:                [ { ip_protocol: '-1',
                                 user_id_group_pairs: [ { group_id: 'self_id' } ] } ],
 
-    sg_test:                [ { ip_protocol: '-1', from_port: -1, to_port: -1,
+    sg_test:                [ { ip_protocol: '-1',
                                 user_id_group_pairs: [ { group_id: 'test_id' } ] } ],
 
-    sg_self_sg_test:        [ { ip_protocol: '-1', from_port: -1, to_port: -1,
+    sg_self_sg_test:        [ { ip_protocol: '-1',
                                 user_id_group_pairs: [ { group_id: 'test_id' },
                                                        { group_id: 'self_id'} ] } ],
 
@@ -53,10 +53,10 @@ describe PuppetX::Puppetlabs::AwsIngressRulesParser do
     sg_self_port_range:     [ { ip_protocol: '-1', from_port: 10, to_port: 100,
                                 user_id_group_pairs: [ { group_id: 'self_id' } ] } ],
 
-    cidr:                   [ { ip_protocol: '-1', from_port: -1, to_port: -1,
+    cidr:                   [ { ip_protocol: '-1',
                                 ip_ranges: [ { cidr_ip: '0.0.0.0/8' } ] } ],
 
-    cidr_cidr:              [ { ip_protocol: '-1', from_port: -1, to_port: -1,
+    cidr_cidr:              [ { ip_protocol: '-1',
                                 ip_ranges: [ { cidr_ip: '0.0.0.0/8' },
                                              { cidr_ip: '1.1.1.1/8' } ] } ],
 
@@ -76,27 +76,27 @@ describe PuppetX::Puppetlabs::AwsIngressRulesParser do
                                 ip_ranges: [ { cidr_ip: '0.0.0.0/8' } ] } ] }
 
   NON_VPC_IP_PERMISSION_LISTS = {
-    sg_self:                [ { ip_protocol: 'tcp', from_port: -1, to_port: -1,
+    sg_self:                [ { ip_protocol: 'tcp',
                                 user_id_group_pairs: [ { group_id: 'self_id' } ] },
-                              { ip_protocol: 'udp', from_port: -1, to_port: -1,
+                              { ip_protocol: 'udp',
                                 user_id_group_pairs: [ { group_id: 'self_id' } ] },
-                              { ip_protocol: 'icmp', from_port: -1, to_port: -1,
+                              { ip_protocol: 'icmp',
                                 user_id_group_pairs: [ { group_id: 'self_id' } ] } ],
 
-    sg_test:                [ { ip_protocol: 'tcp', from_port: -1, to_port: -1,
+    sg_test:                [ { ip_protocol: 'tcp',
                                 user_id_group_pairs: [ { group_id: 'test_id' } ] },
-                              { ip_protocol: 'udp', from_port: -1, to_port: -1,
+                              { ip_protocol: 'udp',
                                 user_id_group_pairs: [ { group_id: 'test_id' } ] },
-                              { ip_protocol: 'icmp', from_port: -1, to_port: -1,
+                              { ip_protocol: 'icmp',
                                 user_id_group_pairs: [ { group_id: 'test_id' } ] } ],
 
-    sg_self_sg_test:        [ { ip_protocol: 'tcp', from_port: -1, to_port: -1,
+    sg_self_sg_test:        [ { ip_protocol: 'tcp',
                                 user_id_group_pairs: [ { group_id: 'test_id' },
                                                        { group_id: 'self_id' } ] },
-                              { ip_protocol: 'udp', from_port: -1, to_port: -1,
+                              { ip_protocol: 'udp',
                                 user_id_group_pairs: [ { group_id: 'test_id' },
                                                        { group_id: 'self_id' } ] },
-                              { ip_protocol: 'icmp', from_port: -1, to_port: -1,
+                              { ip_protocol: 'icmp',
                                 user_id_group_pairs: [ { group_id: 'test_id' },
                                                        { group_id: 'self_id' } ] } ],
 
@@ -116,30 +116,30 @@ describe PuppetX::Puppetlabs::AwsIngressRulesParser do
                                 user_id_group_pairs: [ { group_id: 'self_id' } ] },
                               { ip_protocol: 'udp', from_port: 10, to_port: 10,
                                 user_id_group_pairs: [ { group_id: 'self_id' } ] },
-                              { ip_protocol: 'icmp', from_port: -1, to_port: -1,
+                              { ip_protocol: 'icmp',
                                 user_id_group_pairs: [ { group_id: 'self_id' } ] } ],
 
     sg_self_port_range:     [ { ip_protocol: 'tcp', from_port: 10, to_port: 100,
                                 user_id_group_pairs: [ { group_id: 'self_id' } ] },
                               { ip_protocol: 'udp', from_port: 10, to_port: 100,
                                 user_id_group_pairs: [ { group_id: 'self_id' } ] },
-                              { ip_protocol: 'icmp', from_port: -1, to_port: -1,
+                              { ip_protocol: 'icmp',
                                 user_id_group_pairs: [ { group_id: 'self_id' } ] } ],
 
-    cidr:                   [ { ip_protocol: 'tcp', from_port: -1, to_port: -1,
+    cidr:                   [ { ip_protocol: 'tcp',
                                 ip_ranges: [ { cidr_ip: '0.0.0.0/8' } ] },
-                              { ip_protocol: 'udp', from_port: -1, to_port: -1,
+                              { ip_protocol: 'udp',
                                 ip_ranges: [ { cidr_ip: '0.0.0.0/8' } ] },
-                              { ip_protocol: 'icmp', from_port: -1, to_port: -1,
+                              { ip_protocol: 'icmp',
                                 ip_ranges: [ { cidr_ip: '0.0.0.0/8' } ] } ],
 
-    cidr_cidr:              [ { ip_protocol: 'tcp', from_port: -1, to_port: -1,
+    cidr_cidr:              [ { ip_protocol: 'tcp',
                                 ip_ranges: [ { cidr_ip: '0.0.0.0/8' },
                                              { cidr_ip: '1.1.1.1/8' } ] },
-                              { ip_protocol: 'udp', from_port: -1, to_port: -1,
+                              { ip_protocol: 'udp',
                                 ip_ranges: [ { cidr_ip: '0.0.0.0/8' },
                                              { cidr_ip: '1.1.1.1/8' } ] },
-                              { ip_protocol: 'icmp', from_port: -1, to_port: -1,
+                              { ip_protocol: 'icmp',
                                 ip_ranges: [ { cidr_ip: '0.0.0.0/8' },
                                              { cidr_ip: '1.1.1.1/8' } ] } ],
 
@@ -156,14 +156,14 @@ describe PuppetX::Puppetlabs::AwsIngressRulesParser do
                                 ip_ranges: [ { cidr_ip: '0.0.0.0/8' } ] },
                               { ip_protocol: 'udp', from_port: 10, to_port: 10,
                                 ip_ranges: [ { cidr_ip: '0.0.0.0/8' } ] },
-                              { ip_protocol: 'icmp', from_port: -1, to_port: -1,
+                              { ip_protocol: 'icmp',
                                 ip_ranges: [ { cidr_ip: '0.0.0.0/8' } ] } ],
 
     cidr_port_range:        [ { ip_protocol: 'tcp', from_port: 10, to_port: 100,
                                 ip_ranges: [ { cidr_ip: '0.0.0.0/8' } ] },
                               { ip_protocol: 'udp', from_port: 10, to_port: 100,
                                 ip_ranges: [ { cidr_ip: '0.0.0.0/8' } ] },
-                              { ip_protocol: 'icmp', from_port: -1, to_port: -1,
+                              { ip_protocol: 'icmp',
                                 ip_ranges: [ { cidr_ip: '0.0.0.0/8' } ] } ] }
 
   describe '#rule_to_ip_permission_list' do # (ec2, rule, group_id, group_name)
