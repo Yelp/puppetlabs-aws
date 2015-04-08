@@ -125,15 +125,14 @@ Puppet::Type.type(:ec2_securitygroup).provide(:v2, :parent => PuppetX::Puppetlab
       ec2.revoke_security_group_ingress(
         group_id: @property_hash[:id],
         ip_permissions: PuppetX::Puppetlabs::AwsIngressRulesParser.rule_to_ip_permission_list(
-          ec2, vpc_only_account?, rule, self_ref))
+          ec2, !!@property_hash[:vpc_id], rule, self_ref))
     end
 
     to_create.compact.each do |rule|
       ec2.authorize_security_group_ingress(
         group_id: @property_hash[:id],
-        ip_permissions:
-          PuppetX::Puppetlabs::AwsIngressRulesParser.rule_to_ip_permission_list(
-            ec2, vpc_only_account?, rule, self_ref))
+        ip_permissions: PuppetX::Puppetlabs::AwsIngressRulesParser.rule_to_ip_permission_list(
+          ec2, !!@property_hash[:vpc_id], rule, self_ref))
     end
   end
 
