@@ -13,6 +13,7 @@ describe PuppetX::Puppetlabs::AwsIngressRulesParser do
     sg_self_tcp:            { 'protocol' => 'tcp' },
     sg_self_tcp_port:       { 'port' => 10, 'protocol' => 'tcp' },
     sg_self_tcp_port_range: { 'port' => [10, 100], 'protocol' => 'tcp' },
+    sg_self_icmp:           { 'protocol' => 'icmp' },
     sg_self_port:           { 'port' => 10 },
     sg_self_port_range:     { 'port' => [10, 100] },
     cidr:                   { 'cidr' => '0.0.0.0/8' },
@@ -41,6 +42,9 @@ describe PuppetX::Puppetlabs::AwsIngressRulesParser do
                                 user_id_group_pairs: [ { group_id: 'self_id' } ] } ],
 
     sg_self_tcp_port_range: [ { ip_protocol: 'tcp', from_port: 10, to_port: 100,
+                                user_id_group_pairs: [ { group_id: 'self_id' } ] } ],
+
+    sg_self_icmp:           [ { ip_protocol: 'icmp', from_port: -1, to_port: -1,
                                 user_id_group_pairs: [ { group_id: 'self_id' } ] } ],
 
     sg_self_port:           [ { ip_protocol: '-1', from_port: 10, to_port: 10,
@@ -103,6 +107,9 @@ describe PuppetX::Puppetlabs::AwsIngressRulesParser do
                                 user_id_group_pairs: [ { group_id: 'self_id' } ] } ],
 
     sg_self_tcp_port_range: [ { ip_protocol: 'tcp', from_port: 10, to_port: 100,
+                                user_id_group_pairs: [ { group_id: 'self_id' } ] } ],
+
+    sg_self_icmp:           [ { ip_protocol: 'icmp', from_port: -1, to_port: -1,
                                 user_id_group_pairs: [ { group_id: 'self_id' } ] } ],
 
     sg_self_port:           [ { ip_protocol: 'tcp', from_port: 10, to_port: 10,

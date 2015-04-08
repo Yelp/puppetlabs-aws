@@ -58,6 +58,7 @@ module PuppetX
           (rule['cidr'] ? nil : self_ref.last)
         ports = Array(rule['port']).map{|p| p.is_a?(String) ? p.to_i : p}
         ports = [0, 65535] if ports.empty? && %w{udp tcp}.include?(rule['protocol'])
+        ports = [-1] if ports.empty? && %w{icmp}.include?(rule['protocol'])
 
         {
           ip_protocol: rule['protocol'] || '-1',
@@ -83,6 +84,7 @@ module PuppetX
 
         h.delete 'security_group' if h['security_group'] == [self_ref.last]
         h.delete 'port' if %w{udp tcp}.include?(h['protocol']) && h['port'] == [0, 65535]
+        h.delete 'port' if h['protocol'] == 'icmp' && h['port'] == [-1]
 
         %w{cidr port security_group}.each do |at|
           next unless h[at]
