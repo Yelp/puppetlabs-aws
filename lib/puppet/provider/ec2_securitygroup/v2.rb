@@ -10,23 +10,13 @@ Puppet::Type.type(:ec2_securitygroup).provide(:v2, :parent => PuppetX::Puppetlab
   def self.instances
     regions.collect do |region|
       begin
-        vpc_names = {}
-        vpc_response = ec2_client(region).describe_vpcs()
-        vpc_response.data.vpcs.each do |vpc|
-          vpc_name = name_from_tag(vpc)
-          vpc_names[vpc.vpc_id] = vpc_name if vpc_name
-        end
-
-        group_names = {}
-        groups = ec2_client(region).describe_security_groups.collect do |response|
+        groups = []
+        ec2_client(region).describe_security_groups.each do |response|
           response.data.security_groups.collect do |group|
-            group_names[group.group_id] = group.group_name || name_from_tag(group)
-            group
+            groups << new(security_group_to_hash(region, group))
           end
-        end.flatten
-        groups.collect do |group|
-          new(security_group_to_hash(region, group, group_names, vpc_names))
-        end.compact
+        end
+        groups
       rescue StandardError => e
         raise PuppetX::Puppetlabs::FetchingAWSDataError.new(region, self.resource_type.name.to_s, e.message)
       end
@@ -72,8 +62,8 @@ Puppet::Type.type(:ec2_securitygroup).provide(:v2, :parent => PuppetX::Puppetlab
       group_name: group.group_name,
       description: group.description,
       ensure: :present,
-      ingress: format_ingress_rules(region, group, groups),
-      vpc: vpcs[group.vpc_id],
+      ingress: format_ingress_rules(ec2, group),
+      vpc: vpc_name,
       vpc_id: group.vpc_id,
       region: region,
       tags: tags_for(group),
@@ -87,6 +77,10 @@ Puppet::Type.type(:ec2_securitygroup).provide(:v2, :parent => PuppetX::Puppetlab
 
   def ec2
     ec2_client(target_region)
+  end
+
+  def target_region
+    resource ? resource[:region] : region
   end
 
   def create
