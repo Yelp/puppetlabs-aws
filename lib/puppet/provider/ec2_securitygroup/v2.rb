@@ -10,13 +10,23 @@ Puppet::Type.type(:ec2_securitygroup).provide(:v2, :parent => PuppetX::Puppetlab
   def self.instances
     regions.collect do |region|
       begin
-        groups = []
-        ec2_client(region).describe_security_groups.each do |response|
-          response.data.security_groups.collect do |group|
-            groups << new(security_group_to_hash(region, group))
-          end
+        vpc_names = {}
+        vpc_response = ec2_client(region).describe_vpcs()
+        vpc_response.data.vpcs.each do |vpc|
+          vpc_name = name_from_tag(vpc)
+          vpc_names[vpc.vpc_id] = vpc_name if vpc_name
         end
-        groups
+
+        group_names = {}
+        groups = ec2_client(region).describe_security_groups.collect do |response|
+          response.data.security_groups.collect do |group|
+            group_names[group.group_id] = group.group_name || name_from_tag(group)
+            group
+          end
+        end.flatten
+        groups.collect do |group|
+          new(security_group_to_hash(region, group, group_names, vpc_names))
+        end.compact
       rescue StandardError => e
         raise PuppetX::Puppetlabs::FetchingAWSDataError.new(region, self.resource_type.name.to_s, e.message)
       end
@@ -62,8 +72,8 @@ Puppet::Type.type(:ec2_securitygroup).provide(:v2, :parent => PuppetX::Puppetlab
       group_name: group.group_name,
       description: group.description,
       ensure: :present,
-      ingress: format_ingress_rules(ec2, group),
-      vpc: vpc_name,
+      ingress: format_ingress_rules(region, group, groups),
+      vpc: vpcs[group.vpc_id],
       vpc_id: group.vpc_id,
       region: region,
       tags: tags_for(group),
@@ -71,14 +81,16 @@ Puppet::Type.type(:ec2_securitygroup).provide(:v2, :parent => PuppetX::Puppetlab
   end
 
   def exists?
-    dest_region = resource[:region] if resource
-    Puppet.info("Checking if security group #{name} exists in region #{dest_region || region}")
+    Puppet.info("Checking if security group #{name} exists in region #{target_region}")
     @property_hash[:ensure] == :present
   end
 
+  def ec2
+    ec2_client(target_region)
+  end
+
   def create
-    Puppet.info("Creating security group #{name} in region #{resource[:region]}")
-    ec2 = ec2_client(resource[:region])
+    Puppet.info("Creating security group #{name} in region #{target_region}")
     config = {
       group_name: name,
       description: resource[:description]
@@ -151,8 +163,8 @@ Puppet::Type.type(:ec2_securitygroup).provide(:v2, :parent => PuppetX::Puppetlab
   end
 
   def destroy
-    Puppet.info("Deleting security group #{name} in region #{resource[:region]}")
-    ec2_client(resource[:region]).delete_security_group(
+    Puppet.info("Deleting security group #{name} in region #{target_region}")
+    ec2.delete_security_group(
       group_id: @property_hash[:id]
     )
     @property_hash[:ensure] = :absent
