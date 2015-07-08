@@ -1,0 +1,48 @@
+--- 
+  http_interactions: 
+    - request: 
+        method: get
+        uri: "https://s3-sa-east-1.amazonaws.com/"
+        body: 
+          encoding: ASCII-8BIT
+          string: ""
+        headers: 
+          Content-Type: 
+            - ""
+          Accept-Encoding: 
+            - ""
+          User-Agent: 
+            - "aws-sdk-ruby2/2.0.5 ruby/2.0.0 universal.x86_64-darwin14"
+          Date: 
+            - "Wed, 08 Jul 2015 16:48:54 GMT"
+          Authorization: 
+            - "AWS AKIAJ4GEOBXN3L7636JA:dcjnP8xGWSSjwISu8qHe2GayBQE="
+          Content-Length: 
+            - "0"
+          Accept: 
+            - "*/*"
+      response: 
+        status: 
+          code: 200
+          message: OK
+        headers: 
+          X-Amz-Id-2: 
+            - "ttQ5t8teGUqRnXxwxmFZ+A7umrHEmbF+qt1BJ+3dF2Iis72TgjDhot7hpovajZLUqn5qwmCffAg="
+          X-Amz-Request-Id: 
+            - "87559D8FDE0DA9F9"
+          Date: 
+            - "Wed, 08 Jul 2015 16:48:56 GMT"
+          Content-Type: 
+            - application/xml
+          Transfer-Encoding: 
+            - chunked
+          Server: 
+            - AmazonS3
+        body: 
+          encoding: UTF-8
+          string: |-
+            <?xml version="1.0" encoding="UTF-8"?>
+            <ListAllMyBucketsResult xmlns="http://s3.amazonaws.com/doc/2006-03-01/"><Owner><ID>581b620ebf1c731c44355ec98fdcefcc8dc2a150053380200a529715336884e0</ID><DisplayName>systems+aws+risky</DisplayName></Owner><Buckets><Bucket><Name>bchess-qubole-test</Name><CreationDate>2014-10-10T14:29:27.000Z</CreationDate></Bucket><Bucket><Name>bryane-osquery-test</Name><CreationDate>2014-09-30T01:42:01.000Z</CreationDate></Bucket><Bucket><Name>smoy-pwais-test</Name><CreationDate>2014-08-25T21:49:47.000Z</CreationDate></Bucket><Bucket><Name>yelp-cloudtrail-local-bucket</Name><CreationDate>2014-10-20T19:11:51.000Z</CreationDate></Bucket><Bucket><Name>yelp-databricks-test</Name><CreationDate>2014-12-17T18:36:54.000Z</CreationDate></Bucket></Buckets></ListAllMyBucketsResult>
+        http_version: 
+      recorded_at: "Wed, 08 Jul 2015 16:48:56 GMT"
+  recorded_with: "VCR 2.9.3"

@@ -1,13 +1,5 @@
 require 'aws-sdk-core'
 
-if ENV['AWS_DEBUG'] == '1'
-  require 'logger'
-  logger = Logger.new($stdout)
-  logger.formatter = proc {|severity, datetime, progname, msg| msg }
-  Aws.config[:logger] = logger
-  Aws.config[:log_formatter] = Seahorse::Client::Logging::Formatter.colored
-end
-
 module PuppetX
   module Puppetlabs
     # We purposefully inherit from Exception here due to PUP-3656
@@ -65,16 +57,17 @@ This could be because some other process is modifying AWS at the same time."""
         end
       end
 
-      def self.logger
-        if ENV['PUPPET_AWS_DEBUG_LOG'] and not ENV['PUPPET_AWS_DEBUG_LOG'].empty?
-          Logger.new('puppet-aws-debug.log')
-        else
-          nil
+      def self.logger_options
+        @logger_options ||= if !ENV['PUPPET_AWS_DEBUG_LOG'].empty?
+          { logger: Logger.new($stdout).tap do |logger|
+                      logger.formatter = proc {|severity, datetime, progname, msg| msg }
+                    end,
+            log_formatter: Seahorse::Client::Logging::Formatter.colored }
         end
       end
 
       def self.client_config(region)
-        config = {region: region, logger: logger}
+        config = {region: region}.merge logger_options
         if ENV['PUPPET_AWS_PROXY'] and not ENV['PUPPET_AWS_PROXY'].empty?
           config[:http_proxy] = ENV['PUPPET_AWS_PROXY']
         end
@@ -87,6 +80,15 @@ This could be because some other process is modifying AWS at the same time."""
 
       def ec2_client(region = default_region)
         self.class.ec2_client(region)
+      end
+
+      def self.s3_client(region = default_region)
+        (@s3_clients ||= {})[region] ||=
+          ::Aws::S3::Client.new(client_config(region))
+      end
+
+      def s3_client(region = default_region)
+        self.class.s3_client(region)
       end
 
       def self.vpc_only_account?
