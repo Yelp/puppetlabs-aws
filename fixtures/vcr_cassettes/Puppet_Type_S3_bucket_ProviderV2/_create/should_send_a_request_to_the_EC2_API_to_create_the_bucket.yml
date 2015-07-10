@@ -1,0 +1,97 @@
+--- 
+  http_interactions: 
+    - request: 
+        method: put
+        uri: "https://test-web-sg.s3-sa-east-1.amazonaws.com/"
+        body: 
+          encoding: UTF-8
+          string: "<CreateBucketConfiguration xmlns=\x22http://s3.amazonaws.com/doc/2006-03-01/\x22>\n  <LocationConstraint>sa-east-1</LocationConstraint>\n</CreateBucketConfiguration>\n"
+        headers: 
+          Content-Type: 
+            - ""
+          Accept-Encoding: 
+            - ""
+          User-Agent: 
+            - "aws-sdk-ruby2/2.0.32 ruby/2.0.0 universal.x86_64-darwin14"
+          Expect: 
+            - "100-continue"
+          Content-Md5: 
+            - "ovTFOCwuDIdfwuLb1js9kg=="
+          X-Amz-Date: 
+            - "20150710T075334Z"
+          Host: 
+            - test-web-sg.s3-sa-east-1.amazonaws.com
+          X-Amz-Content-Sha256: 
+            - "32722467b09fda12e506fa12c3a42908768b72f2adf6be5b12d131c0c3cdc700"
+          Authorization: 
+            - "AWS4-HMAC-SHA256 Credential=AKIAJ4GEOBXN3L7636JA/20150710/sa-east-1/s3/aws4_request, SignedHeaders=content-md5;expect;host;user-agent;x-amz-content-sha256;x-amz-date, Signature=3d532b564aed824c197b9e6207f543b5cf6ae605eed48e31c3b5548e800f3297"
+          Content-Length: 
+            - "158"
+          Accept: 
+            - "*/*"
+      response: 
+        status: 
+          code: 200
+          message: OK
+        headers: 
+          X-Amz-Id-2: 
+            - "Y68CN/BC+q+3UtWbc34GjkznS38A1GtGpGFhnMsGG8nkOGBeQS2YWq+Q0H0yxX7v"
+          X-Amz-Request-Id: 
+            - "0863A8CF4F2244E5"
+          Date: 
+            - "Fri, 10 Jul 2015 07:53:36 GMT"
+          Location: 
+            - "http://test-web-sg.s3.amazonaws.com/"
+          Content-Length: 
+            - "0"
+          Server: 
+            - AmazonS3
+        body: 
+          encoding: UTF-8
+          string: ""
+        http_version: 
+      recorded_at: "Fri, 10 Jul 2015 07:53:36 GMT"
+    - request: 
+        method: delete
+        uri: "https://test-web-sg.s3-sa-east-1.amazonaws.com/"
+        body: 
+          encoding: ASCII-8BIT
+          string: ""
+        headers: 
+          Content-Type: 
+            - ""
+          Accept-Encoding: 
+            - ""
+          User-Agent: 
+            - "aws-sdk-ruby2/2.0.32 ruby/2.0.0 universal.x86_64-darwin14"
+          X-Amz-Date: 
+            - "20150710T075336Z"
+          Host: 
+            - test-web-sg.s3-sa-east-1.amazonaws.com
+          X-Amz-Content-Sha256: 
+            - e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855
+          Authorization: 
+            - "AWS4-HMAC-SHA256 Credential=AKIAJ4GEOBXN3L7636JA/20150710/sa-east-1/s3/aws4_request, SignedHeaders=host;user-agent;x-amz-content-sha256;x-amz-date, Signature=edc226295a8369d396ec8c3aa709c7291663f9f027248816c21c8ebcf9e5f1e8"
+          Content-Length: 
+            - "0"
+          Accept: 
+            - "*/*"
+      response: 
+        status: 
+          code: 204
+          message: "No Content"
+        headers: 
+          X-Amz-Id-2: 
+            - "/40UOUuFFrSgvS1kqJjDIN3ICy+HrIQyrPQ7aJGVT00zZgtKEbX3LOWcp+7SASfP"
+          X-Amz-Request-Id: 
+            - C9E65D362DDE867A
+          Date: 
+            - "Fri, 10 Jul 2015 07:53:38 GMT"
+          Server: 
+            - AmazonS3
+        body: 
+          encoding: UTF-8
+          string: ""
+        http_version: 
+      recorded_at: "Fri, 10 Jul 2015 07:53:38 GMT"
+  recorded_with: "VCR 2.9.3"

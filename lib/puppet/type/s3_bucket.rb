@@ -22,8 +22,4 @@ Puppet::Type.newtype(:s3_bucket) do
       fail 'region should be a String' unless value.is_a?(String)
     end
   end
-
-  newproperty(:tags, :parent => PuppetX::Property::AwsTag) do
-    desc 'The tags for the instance.'
-  end
 end

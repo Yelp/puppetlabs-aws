@@ -3,22 +3,8 @@ require 'spec_helper'
 type_class = Puppet::Type.type(:s3_bucket)
 
 describe type_class do
-
-  let :params do
-    [
-      :name,
-    ]
-  end
-
-  let :properties do
-    [
-      :ensure,
-      :description,
-      :region,
-      :ingress,
-      :tags,
-    ]
-  end
+  let(:params) { [ :name ] }
+  let(:properties) { [ :ensure, :region ] }
 
   it 'should have expected properties' do
     properties.each do |property|
@@ -44,27 +30,9 @@ describe type_class do
     }.to raise_error(Puppet::Error, /region should not contain spaces/)
   end
 
-  [
-    'vpc',
-    'name',
-    'description',
-    'region',
-  ].each do |property|
+  %w{ name region }.each do |property|
     it "should require #{property} to be a string" do
       expect(type_class).to require_string_for(property)
     end
   end
-
-  it "should require ingress to be a hash" do
-    expect(type_class).to require_hash_for('ingress')
-  end
-
-   it "should require tags to be a hash" do
-    expect(type_class).to require_hash_for('tags')
-  end
-
-  it 'should order tags on output' do
-    expect(type_class).to order_tags_on_output
-  end
-
 end

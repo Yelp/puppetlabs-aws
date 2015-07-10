@@ -58,11 +58,13 @@ This could be because some other process is modifying AWS at the same time."""
       end
 
       def self.logger_options
-        @logger_options ||= if !ENV['PUPPET_AWS_DEBUG_LOG'].empty?
+        @logger_options ||= if ENV['PUPPET_AWS_DEBUG_LOG']
           { logger: Logger.new($stdout).tap do |logger|
                       logger.formatter = proc {|severity, datetime, progname, msg| msg }
                     end,
             log_formatter: Seahorse::Client::Logging::Formatter.colored }
+        else
+          {}
         end
       end
 

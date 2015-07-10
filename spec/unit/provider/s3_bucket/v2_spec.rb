@@ -28,12 +28,15 @@ describe Puppet::Type.type(:s3_bucket).provider(:v2), vcr: true do
 
   describe '#create' do
     it 'should send a request to the EC2 API to create the bucket' do
+      provider.destroy if provider.ensure == :present
       expect(provider.create).to be_truthy
+      provider.destroy
     end
   end
 
   describe '#destroy' do
     it 'should send a request to the EC2 API to destroy the bucket' do
+      provider.create if provider.ensure == :absent
       expect(provider.destroy).to be_truthy
     end
   end
