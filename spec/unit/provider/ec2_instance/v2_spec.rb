@@ -27,10 +27,8 @@ describe provider_class do
 
   describe 'self.prefetch' do
     it 'should exist' do
-      VCR.use_cassette('instance-setup') do
-        provider.class.instances
-        provider.class.prefetch({})
-      end
+      provider.class.instances
+      provider.class.prefetch({})
     end
   end
 
@@ -38,39 +36,29 @@ describe provider_class do
 
     describe 'running exists?' do
       it 'should correctly report non-existent instances' do
-        VCR.use_cassette('no-instance-with-name') do
-          expect(provider.exists?).to be_falsy
-        end
+        expect(provider.exists?).to be_falsy
       end
 
       it 'should correctly find existing instances' do
-        VCR.use_cassette('instance-with-name') do
-          expect(instance.exists?).to be_truthy
-        end
+        expect(instance.exists?).to be_truthy
       end
     end
 
     describe 'running create' do
       it 'should send a request to the EC2 API to create the instance' do
-        VCR.use_cassette('create-instance') do
-          expect(provider.create).to be_truthy
-        end
+        expect(provider.create).to be_truthy
       end
     end
 
     describe 'running destroy' do
       it 'should send a request to the EC2 API to destroy the instance' do
-        VCR.use_cassette('destroy-instance') do
-          expect(provider.destroy).to be_truthy
-        end
+        expect(provider.destroy).to be_truthy
       end
     end
 
     describe 'running stop' do
       it 'should send a request to the EC2 API to stop the instance' do
-        VCR.use_cassette('stop-instance') do
-          expect(provider.stop).to be_truthy
-        end
+        expect(provider.stop).to be_truthy
       end
     end
 

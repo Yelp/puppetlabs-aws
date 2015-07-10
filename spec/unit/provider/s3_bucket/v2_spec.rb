@@ -1,10 +1,8 @@
 require 'spec_helper'
 
-#ENV['AWS_ACCESS_KEY_ID'] = 'redacted'
-#ENV['AWS_SECRET_ACCESS_KEY'] = 'redacted'
 ENV['AWS_REGION'] = 'sa-east-1'
 
-describe Puppet::Type.type(:s3_bucket).provider(:v2), vcr: true do
+describe Puppet::Type.type(:s3_bucket).provider(:v2) do
   let(:resource) do
     Puppet::Type.type(:s3_bucket).new(
       name: 'test-web-sg', region: 'sa-east-1')

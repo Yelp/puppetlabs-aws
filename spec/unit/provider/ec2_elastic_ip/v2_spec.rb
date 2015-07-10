@@ -2,8 +2,6 @@ require 'spec_helper'
 
 provider_class = Puppet::Type.type(:ec2_elastic_ip).provider(:v2)
 
-ENV['AWS_ACCESS_KEY_ID'] = 'redacted'
-ENV['AWS_SECRET_ACCESS_KEY'] = 'redacted'
 ENV['AWS_REGION'] = 'sa-east-1'
 
 describe provider_class do
@@ -25,40 +23,30 @@ describe provider_class do
 
     describe 'self.prefetch' do
       it 'exists' do
-        VCR.use_cassette('ip-setup') do
-          provider.class.instances
-          provider.class.prefetch({})
-        end
+        provider.class.instances
+        provider.class.prefetch({})
       end
     end
 
     describe 'exists?' do
       it 'should correctly report non-existent Elastic IP addresses' do
-        VCR.use_cassette('no-ip-named') do
-          expect(provider.exists?).to be_falsy
-        end
+        expect(provider.exists?).to be_falsy
       end
 
       it 'should correctly find existing Elastic IP addresses' do
-        VCR.use_cassette('ip-named') do
-          expect(instance.exists?).to be_truthy
-        end
+        expect(instance.exists?).to be_truthy
       end
     end
 
     describe 'create' do
       it 'should send a request to the EC2 API to create the association' do
-        VCR.use_cassette('create-ip') do
-          expect(provider.create).to be_truthy
-        end
+        expect(provider.create).to be_truthy
       end
     end
 
     describe 'destroy' do
       it 'should send a request to the EC2 API to destroy the association' do
-        VCR.use_cassette('destroy-ip') do
-          expect(provider.destroy).to be_truthy
-        end
+        expect(provider.destroy).to be_truthy
       end
     end
 

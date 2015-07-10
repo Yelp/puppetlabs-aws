@@ -1,22 +1,38 @@
 require 'spec_helper'
 
+region = ENV['AWS_REGION']
 provider_class = Puppet::Type.type(:ec2_scalingpolicy).provider(:v2)
 
-ENV['AWS_ACCESS_KEY_ID'] = 'redacted'
-ENV['AWS_SECRET_ACCESS_KEY'] = 'redacted'
-ENV['AWS_REGION'] = 'sa-east-1'
-
 describe provider_class do
+  let(:autoscaling_group) do
+    Puppet::Type.type(:ec2_autoscalinggroup).new(
+      name: 'test-asg',
+      max_size: 2,
+      min_size: 1,
+      launch_configuration: 'test-lc',
+      region: region,
+      availability_zones: [region + 'a']).provider
+  end
 
-  let(:resource) {
+  let(:launch_configuration) do
+    Puppet::Type.type(:ec2_launchconfiguration).new(
+      name: 'test-lc',
+      image_id: 'ami-00211b1d',
+      instance_type: 't2.micro',
+      security_groups: [],
+      region: region
+    ).provider
+  end
+
+  let(:resource) do
     Puppet::Type.type(:ec2_scalingpolicy).new(
       name: 'scalein',
       auto_scaling_group: 'test-asg',
       scaling_adjustment: 30,
       adjustment_type: 'PercentChangeInCapacity',
-      region: 'sa-east-1',
+      region: region
     )
-  }
+  end
 
   let(:provider) { resource.provider }
 
@@ -28,45 +44,33 @@ describe provider_class do
 
   describe 'self.prefetch' do
     it 'should exist' do
-      VCR.use_cassette('policy-setup') do
-        provider.class.instances
-        provider.class.prefetch({})
-      end
+      provider.class.instances
+      provider.class.prefetch({})
     end
   end
 
   context 'with the minimum params' do
-
-    describe 'running exists?' do
-      it 'should correctly report non-existent scaling policies' do
-        VCR.use_cassette('no-policy-with-name') do
-          expect(provider.exists?).to be_falsy
-        end
-      end
-
-      it 'should correctly find existing scaling policies' do
-        VCR.use_cassette('policy-with-name') do
-          expect(instance.exists?).to be_truthy
-        end
-      end
-    end
-
-    describe 'running create' do
+    describe 'running create and destroy' do
       it 'should send a request to the EC2 API to create the policy' do
-        VCR.use_cassette('create-policy') do
-          expect(provider.create).to be_truthy
+        expect(provider.exists?).to be_falsy
+        with(launch_configuration) do
+          with(autoscaling_group) do
+            expect(provider.create).to be_truthy
+            expect(instance.exists?).to be_truthy
+            expect(provider.destroy).to be_truthy
+          end
         end
       end
     end
-
-    describe 'running destroy' do
-      it 'should send a request to the EC2 API to destroy the policy' do
-        VCR.use_cassette('destroy-policy') do
-          expect(provider.destroy).to be_truthy
-        end
-      end
-    end
-
   end
 
+  def with(object,
+           find=proc{|o| o.class.instances.find{|i| i.name == o.name}},
+           create=proc{|o| o.create},
+           destroy=proc{|o| o.destroy})
+    create.call(object) unless find.call(object)
+    yield
+  ensure
+    destroy.call(object) if find.call(object)
+  end
 end
