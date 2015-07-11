@@ -4,7 +4,7 @@ require 'securerandom'
 describe "rds_db_securitygroup" do
 
   before(:all) do
-    @default_region = 'sa-east-1'
+    @default_region = AWS_REGION
     @aws = AwsHelper.new(@default_region)
     @template = 'rds_db_securitygroup.pp.tmpl'
   end

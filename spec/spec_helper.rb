@@ -1,6 +1,8 @@
 require 'aws-sdk-core'
 require 'puppetlabs_spec_helper/module_spec_helper'
 
+AWS_REGION = ENV['AWS_REGION']
+
 if ENV['PARSER'] == 'future'
   RSpec.configure do |c|
     c.parser = 'future'

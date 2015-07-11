@@ -6,7 +6,7 @@ def asg_config
     max_size: 2,
     min_size: 1,
     launch_configuration: 'test-lc',
-    region: 'sa-east-1',
+    region: AWS_REGION,
   }
 end
 

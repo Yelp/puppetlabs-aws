@@ -5,7 +5,7 @@ require_relative '../../lib/puppet_x/puppetlabs/aws_ingress_rules_parser.rb'
 
 describe "ec2_securitygroup" do
   before(:all) do
-    @default_region = ENV['AWS_REGION'] || 'sa-east-1'
+    @default_region = ENV['AWS_REGION'] || AWS_REGION
     @aws = AwsHelper.new(@default_region)
     @template = 'securitygroup.pp.erb'
   end

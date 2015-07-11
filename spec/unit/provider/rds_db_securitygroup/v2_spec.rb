@@ -2,8 +2,6 @@ require 'spec_helper'
 
 provider_class = Puppet::Type.type(:rds_db_securitygroup).provider(:v2)
 
-ENV['AWS_REGION'] = 'sa-east-1'
-
 describe provider_class do
 
   let(:resource) {

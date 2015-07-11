@@ -5,7 +5,7 @@ type_class = Puppet::Type.type(:elb_loadbalancer)
 def elb_config
   {
     name: 'lb-1',
-    availability_zones: ['sa-east-1a'],
+    availability_zones: [AWS_REGION+'a'],
     instances: ['web-1', 'web-2'],
     listeners: [{
       'protocol' => 'tcp',
@@ -13,7 +13,7 @@ def elb_config
       'instance_protocol' => 'tcp',
       'instance_port' => 80,
     }],
-    region: 'sa-east-1',
+    region: AWS_REGION,
   }
 end
 

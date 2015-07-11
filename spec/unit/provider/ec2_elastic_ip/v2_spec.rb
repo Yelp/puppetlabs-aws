@@ -2,14 +2,12 @@ require 'spec_helper'
 
 provider_class = Puppet::Type.type(:ec2_elastic_ip).provider(:v2)
 
-ENV['AWS_REGION'] = 'sa-east-1'
-
 describe provider_class do
 
   context 'with the minimum params' do
     let(:resource) { Puppet::Type.type(:ec2_elastic_ip).new(
       name: '177.71.189.57',
-      region: 'sa-east-1',
+      region: AWS_REGION,
       instance: 'web-1',
     )}
 
@@ -28,6 +26,12 @@ describe provider_class do
       end
     end
 
+    describe 'create' do
+      it 'should send a request to the EC2 API to create the association' do
+        expect(provider.create).to be_truthy
+      end
+    end
+
     describe 'exists?' do
       it 'should correctly report non-existent Elastic IP addresses' do
         expect(provider.exists?).to be_falsy
@@ -35,12 +39,6 @@ describe provider_class do
 
       it 'should correctly find existing Elastic IP addresses' do
         expect(instance.exists?).to be_truthy
-      end
-    end
-
-    describe 'create' do
-      it 'should send a request to the EC2 API to create the association' do
-        expect(provider.create).to be_truthy
       end
     end
 

@@ -2,8 +2,6 @@ require 'spec_helper'
 
 provider_class = Puppet::Type.type(:elb_loadbalancer).provider(:v2)
 
-ENV['AWS_REGION'] = 'sa-east-1'
-
 describe provider_class do
 
   context 'with the minimum params' do
@@ -17,8 +15,8 @@ describe provider_class do
           'instance_protocol' => 'HTTP',
           'instance_port' => 80
         }],
-        availability_zones: ['sa-east-1a'],
-        region: 'sa-east-1',
+        availability_zones: [AWS_REGION+'a'],
+        region: AWS_REGION,
       )
     }
 

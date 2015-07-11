@@ -2,7 +2,7 @@ require 'spec_helper'
 
 provider_class = Puppet::Type.type(:ec2_autoscalinggroup).provider(:v2)
 
-ENV['AWS_REGION'] = 'sa-east-1'
+ENV['AWS_REGION'] = AWS_REGION
 
 describe provider_class do
 
@@ -12,8 +12,8 @@ describe provider_class do
       max_size: 2,
       min_size: 1,
       launch_configuration: 'test-lc',
-      availability_zones: ['sa-east-1a'],
-      region: 'sa-east-1',
+      availability_zones: [AWS_REGION+'a'],
+      region: AWS_REGION,
     )
   }
 
@@ -34,6 +34,12 @@ describe provider_class do
 
   context 'with the minimum params' do
 
+    describe 'running create' do
+      it 'should send a request to the EC2 API to create the autoscaling group' do
+        expect(provider.create).to be_truthy
+      end
+    end
+
     describe 'running exists?' do
       it 'should correctly report non-existent autoscaling group' do
         expect(provider.exists?).to be_falsy
@@ -41,12 +47,6 @@ describe provider_class do
 
       it 'should correctly find existing autoscaling groups' do
         expect(instance.exists?).to be_truthy
-      end
-    end
-
-    describe 'running create' do
-      it 'should send a request to the EC2 API to create the autoscaling group' do
-        expect(provider.create).to be_truthy
       end
     end
 

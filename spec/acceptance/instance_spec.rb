@@ -6,7 +6,7 @@ require 'base64'
 describe "ec2_instance" do
 
   before(:all) do
-    @default_region = 'sa-east-1'
+    @default_region = AWS_REGION
     @default_availability_zone = "#{@default_region}a"
     @aws = AwsHelper.new(@default_region)
     @template = 'instance.pp.tmpl'
@@ -199,7 +199,7 @@ describe "ec2_instance" do
       @config = {
         :name => "#{PuppetManifest.env_id}-#{SecureRandom.uuid}",
         :instance_type => 't1.micro',
-        :region => 'sa-east-1',
+        :region => AWS_REGION,
         :image_id => 'ami-67a60d7a',
         :ensure => 'present',
         :tags => {
@@ -252,7 +252,7 @@ describe "ec2_instance" do
       {
         :name => "#{PuppetManifest.env_id}-#{SecureRandom.uuid}",
         :instance_type => 't1.micro',
-        :region => 'sa-east-1',
+        :region => AWS_REGION,
         :image_id => 'ami-67a60d7a',
         :ensure => 'present',
         :tags => {
@@ -308,7 +308,7 @@ describe "ec2_instance" do
       }
 
       # The value for this ENV var must be an existing key in your Amazon account
-      # the key must be available in the sa-east-1 region
+      # the key must be available in the AWS_REGION region
       @config[:key_name] = ENV['AWS_KEY_PAIR'] if ENV['AWS_KEY_PAIR']
       # create new instance with puppet resource
       TestExecutor.puppet_resource('ec2_instance', @config, '--modulepath ../')
@@ -460,7 +460,7 @@ describe "ec2_instance" do
       @config = {
         :name => "#{PuppetManifest.env_id}-#{SecureRandom.uuid}",
         :instance_type => 't1.micro',
-        :region => 'sa-east-1',
+        :region => AWS_REGION,
         :image_id => 'ami-67a60d7a',
         :ensure => 'present',
         :ensure_eip => 'attached',

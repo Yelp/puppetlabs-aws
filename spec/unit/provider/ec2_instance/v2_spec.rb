@@ -2,8 +2,6 @@ require 'spec_helper'
 
 provider_class = Puppet::Type.type(:ec2_instance).provider(:v2)
 
-ENV['AWS_REGION'] = 'sa-east-1'
-
 describe provider_class do
 
   let(:resource) {
@@ -11,8 +9,8 @@ describe provider_class do
       name: 'web-15',
       image_id: 'ami-67a60d7a',
       instance_type: 't1.micro',
-      availability_zone: 'sa-east-1a',
-      region: 'sa-east-1',
+      availability_zone: AWS_REGION+'a',
+      region: AWS_REGION,
       security_groups: ['web-sg'],
     )
   }
@@ -34,6 +32,13 @@ describe provider_class do
 
   context 'with the minimum params' do
 
+    describe 'running create' do
+      it 'should send a request to the EC2 API to create the instance' do
+        expect(provider.create).to be_truthy
+        sleep 10
+      end
+    end
+
     describe 'running exists?' do
       it 'should correctly report non-existent instances' do
         expect(provider.exists?).to be_falsy
@@ -44,21 +49,15 @@ describe provider_class do
       end
     end
 
-    describe 'running create' do
-      it 'should send a request to the EC2 API to create the instance' do
-        expect(provider.create).to be_truthy
+    describe 'running stop' do
+      it 'should send a request to the EC2 API to stop the instance' do
+        expect(provider.stop).to be_truthy
       end
     end
 
     describe 'running destroy' do
       it 'should send a request to the EC2 API to destroy the instance' do
         expect(provider.destroy).to be_truthy
-      end
-    end
-
-    describe 'running stop' do
-      it 'should send a request to the EC2 API to stop the instance' do
-        expect(provider.stop).to be_truthy
       end
     end
 

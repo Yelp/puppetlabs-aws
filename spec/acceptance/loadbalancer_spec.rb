@@ -4,7 +4,7 @@ require 'securerandom'
 describe "ec2_loadbalancer" do
 
   before(:all) do
-    @default_region = 'sa-east-1'
+    @default_region = AWS_REGION
     @default_availability_zone = "#{@default_region}a"
     @aws = AwsHelper.new(@default_region)
     @instance_template = 'instance.pp.tmpl'

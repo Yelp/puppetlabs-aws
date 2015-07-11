@@ -1,11 +1,9 @@
 require 'spec_helper'
 
-ENV['AWS_REGION'] = 'sa-east-1'
-
 describe Puppet::Type.type(:s3_bucket).provider(:v2) do
   let(:resource) do
     Puppet::Type.type(:s3_bucket).new(
-      name: 'test-web-sg', region: 'sa-east-1')
+      name: 'test-web-sg', region: AWS_REGION)
   end
   let(:provider) { resource.provider }
   let(:instance) { provider.class.instances.first }

@@ -2,8 +2,6 @@ require 'spec_helper'
 
 provider_class = Puppet::Type.type(:ec2_securitygroup).provider(:v2)
 
-ENV['AWS_REGION'] = 'sa-east-1'
-
 describe provider_class do
 
   context 'with the minimum params' do
@@ -11,7 +9,7 @@ describe provider_class do
       Puppet::Type.type(:ec2_securitygroup).new(
         name: 'test-web-sg',
         description: 'Security group for testing',
-        region: 'sa-east-1',
+        region: AWS_REGION,
       )
     }
 

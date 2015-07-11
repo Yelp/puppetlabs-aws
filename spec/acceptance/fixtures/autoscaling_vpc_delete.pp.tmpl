@@ -1,11 +1,11 @@
 ec2_autoscalinggroup { '{{name}}-asg':
   ensure => {{ensure}},
-  region => 'sa-east-1',
+  region => {{region}},
 } ~>
 
 ec2_launchconfiguration { '{{name}}-lc':
   ensure => {{ensure}},
-  region => 'sa-east-1',
+  region => {{region}},
 } ~>
 
 ec2_vpc_subnet { '{{name}}-subnet':

@@ -2,8 +2,6 @@ require 'spec_helper'
 
 provider_class = Puppet::Type.type(:ec2_launchconfiguration).provider(:v2)
 
-ENV['AWS_REGION'] = 'sa-east-1'
-
 describe provider_class do
 
   let(:resource) {
@@ -11,7 +9,7 @@ describe provider_class do
       name: 'test-lc',
       image_id: 'ami-67a60d7a',
       instance_type: 't1.micro',
-      region: 'sa-east-1',
+      region: AWS_REGION,
       security_groups: ['test-sg'],
     )
   }

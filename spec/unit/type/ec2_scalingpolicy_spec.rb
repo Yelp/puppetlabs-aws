@@ -6,7 +6,7 @@ def policy_config
     auto_scaling_group: 'test-asg',
     scaling_adjustment: 30,
     adjustment_type: 'PercentChangeInCapacity',
-    region: 'sa-east-1',
+    region: AWS_REGION,
   }
 end
 

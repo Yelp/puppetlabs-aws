@@ -4,7 +4,7 @@ require 'securerandom'
 describe "The AWS module" do
 
   before(:all) do
-    @default_region = 'sa-east-1'
+    @default_region = AWS_REGION
     @aws = AwsHelper.new(@default_region)
   end
 
@@ -79,7 +79,7 @@ describe "The AWS module" do
 
     before(:all) do
       @name = "#{PuppetManifest.env_id}-#{SecureRandom.uuid}"
-      region = 'sa-east-1'
+      region = AWS_REGION
       @config = {
         :name => @name,
         :lb_name => "#{PuppetManifest.env_dns_id}#{SecureRandom.uuid}".gsub('-', '')[0...31], # loadbalancer has name length limit
@@ -287,7 +287,7 @@ describe "The AWS module" do
     before(:all) do
       @name = "#{PuppetManifest.env_id}-#{SecureRandom.uuid}"
       ip_address = generate_ip
-      region = 'sa-east-1'
+      region = AWS_REGION
       @config = {
         # shared properties
         :name                       => @name,

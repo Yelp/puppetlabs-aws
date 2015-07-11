@@ -2,8 +2,6 @@ require 'spec_helper'
 
 provider_class = Puppet::Type.type(:cloudwatch_alarm).provider(:v2)
 
-ENV['AWS_REGION'] = 'sa-east-1'
-
 describe provider_class do
 
   let(:resource) {
@@ -16,7 +14,7 @@ describe provider_class do
       threshold: 60,
       comparison_operator: 'GreaterThanOrEqualToThreshold',
       evaluation_periods: 2,
-      region: 'sa-east-1',
+      region: AWS_REGION,
     )
   }
 

@@ -12,7 +12,7 @@ def alarm_config
     threshold: 60,
     comparison_operator: 'GreaterThanOrEqualToThreshold',
     evaluation_periods: 2,
-    region: 'sa-east-1',
+    region: AWS_REGION,
   }
 end
 
