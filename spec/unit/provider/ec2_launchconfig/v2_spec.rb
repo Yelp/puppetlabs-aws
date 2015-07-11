@@ -7,8 +7,8 @@ describe provider_class do
   let(:resource) {
     Puppet::Type.type(:ec2_launchconfiguration).new(
       name: 'test-lc',
-      image_id: 'ami-67a60d7a',
-      instance_type: 't1.micro',
+      image_id: AWS_IMAGE,
+      instance_type: 't2.micro',
       region: AWS_REGION,
       security_groups: ['test-sg'],
     )
