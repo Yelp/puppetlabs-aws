@@ -32,6 +32,11 @@ describe provider_class do
   end
 
   context 'with the minimum params' do
+    describe 'running create' do
+      it 'should send a request to the EC2 API to create the launch configuration' do
+        expect(provider.create).to be_truthy
+      end
+    end
 
     describe 'running exists?' do
       it 'should correctly report non-existent instances' do
@@ -43,18 +48,10 @@ describe provider_class do
       end
     end
 
-    describe 'running create' do
-      it 'should send a request to the EC2 API to create the launch configuration' do
-        expect(provider.create).to be_truthy
-      end
-    end
-
     describe 'running destroy' do
       it 'should send a request to the EC2 API to destroy the launch configuration' do
         expect(provider.destroy).to be_truthy
       end
     end
-
   end
-
 end

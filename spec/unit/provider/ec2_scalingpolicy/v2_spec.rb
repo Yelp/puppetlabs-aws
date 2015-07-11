@@ -17,7 +17,7 @@ describe provider_class do
   let(:launch_configuration) do
     Puppet::Type.type(:ec2_launchconfiguration).new(
       name: 'test-lc',
-      image_id: 'ami-00211b1d',
+      image_id: 'ami-6ef9c273',
       instance_type: 't2.micro',
       security_groups: [],
       region: region
