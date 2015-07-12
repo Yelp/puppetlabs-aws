@@ -74,10 +74,4 @@ describe provider_class do
     end
   end
 
-  def stub_ec2
-    stub.tap do |s|
-      provider.stubs(ec2_client: s)
-      provider.class.stubs(ec2_client: s)
-    end
-  end
 end

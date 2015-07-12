@@ -49,3 +49,18 @@ RSpec::Matchers.define :require_hash_for do |property|
     "#{type_class} should require #{property} to be a Hash"
   end
 end
+
+module EC2Helpers
+  CLIENTS = %w{ec2 cloudwatch s3 route53 autoscaling elb rds}
+
+  CLIENTS.each do |client|
+    define_method("stub_#{client}") do
+      stub.tap do |s|
+        provider.stubs(:"#{client}_client" => s)
+        provider.class.stubs(:"#{client}_client" => s)
+      end
+    end
+  end
+end
+
+RSpec.configure {|c| c.include EC2Helpers}
