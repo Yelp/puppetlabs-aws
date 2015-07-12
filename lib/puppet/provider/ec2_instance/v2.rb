@@ -166,7 +166,7 @@ Puppet::Type.type(:ec2_instance).provide(:v2, :parent => PuppetX::Puppetlabs::Aw
       end
     end
 
-    matching_groups = unless using_vpc?
+    matching_groups = if !using_vpc?
       classic_groups
     else
       if vpc_groups.empty?
