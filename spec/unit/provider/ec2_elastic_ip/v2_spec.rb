@@ -10,9 +10,7 @@ describe provider_class do
       region: AWS_REGION,
       instance: 'web-1',
     )}
-
     let(:provider) { resource.provider }
-
     let(:instance) { provider.class.instances.first }
 
     it 'should be an instance of the ProviderV2' do
@@ -21,6 +19,8 @@ describe provider_class do
 
     describe 'self.prefetch' do
       it 'exists' do
+        ec2 = stub_ec2
+        ec2.expects(:describe_addresses).returns(stub(addresses: [])).twice
         provider.class.instances
         provider.class.prefetch({})
       end
@@ -28,6 +28,15 @@ describe provider_class do
 
     describe 'create' do
       it 'should send a request to the EC2 API to create the association' do
+        ec2 = stub_ec2
+        ec2.expects(:describe_instances).returns(
+          stub(reservations: [stub(instances: [stub(instance_id: 'web-1')])])
+        )
+        ec2.expects(:wait_until).returns(true)
+        ec2.expects(:associate_address).with(
+          instance_id: 'web-1',
+          public_ip: '177.71.189.57'
+        ).returns(true)
         expect(provider.create).to be_truthy
       end
     end
@@ -38,16 +47,37 @@ describe provider_class do
       end
 
       it 'should correctly find existing Elastic IP addresses' do
+        ec2 = stub_ec2
+        ec2.expects(:describe_addresses).returns(
+          stub(addresses: [stub( public_ip: '127.0.0.1',
+                                 instance_id: 'i-12345',
+                                 allocation_id: stub,
+                                 association_id: stub,
+                                 domain: stub )])
+        )
+        ec2.expects(:describe_instances).returns(
+          [stub(data: stub(reservations: [stub(instances: [stub(
+            tags: [stub(key: 'Name', value: 'web-1')])])]))]
+        )
         expect(instance.exists?).to be_truthy
       end
     end
 
     describe 'destroy' do
       it 'should send a request to the EC2 API to destroy the association' do
+        ec2 = stub_ec2
+        ec2.expects(:disassociate_address).
+          with(public_ip: '177.71.189.57').
+          returns(true)
         expect(provider.destroy).to be_truthy
       end
     end
-
   end
 
+  def stub_ec2
+    stub.tap do |s|
+      provider.stubs(ec2_client: s)
+      provider.class.stubs(ec2_client: s)
+    end
+  end
 end
