@@ -35,7 +35,7 @@ Puppet::Type.type(:ec2_securitygroup).provide(:v2, :parent => PuppetX::Puppetlab
 
   def self.format_ingress_rules(ec2, group)
     PuppetX::Puppetlabs::AwsIngressRulesParser.ip_permissions_to_rules_list(
-      ec2, group[:ip_permissions], [group.group_id, group.group_name])
+      ec2, group.ip_permissions, [group.group_id, group.group_name])
   end
 
   def self.security_group_to_hash(region, group)
@@ -54,7 +54,7 @@ Puppet::Type.type(:ec2_securitygroup).provide(:v2, :parent => PuppetX::Puppetlab
         vpc_name_tag ? vpc_name_tag.value : nil
       end
     end
-    name = group[:group_name]
+    name = group.group_name
     name = "#{vpc_name}::#{name}" if vpc_name && name == 'default'
     {
       id: group.group_id,
