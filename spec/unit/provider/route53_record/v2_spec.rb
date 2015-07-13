@@ -5,6 +5,11 @@ provider_class = Puppet::Type.type(:route53_a_record).provider(:v2)
 describe provider_class do
   def domain; "notsotrivialexample.com."; end
   def zone; @zone ||= Puppet::Type.type(:route53_zone).new(name: domain); end
+  def expect_hosted_zone
+    route53.expects(:list_hosted_zones).returns(stub(data: stub(hosted_zones: [stub(
+      name: domain,
+      id: stub)])))
+  end
 
   let(:resource) { Puppet::Type.type(:route53_a_record).new(
     name: "local.#{domain}",
@@ -67,9 +72,4 @@ describe provider_class do
     end
   end
 
-  def expect_hosted_zone
-    route53.expects(:list_hosted_zones).returns(stub(data: stub(hosted_zones: [stub(
-      name: domain,
-      id: stub)])))
-  end
 end
