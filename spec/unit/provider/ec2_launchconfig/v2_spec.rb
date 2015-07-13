@@ -19,8 +19,9 @@ describe provider_class do
   let(:instance) { provider.class.instances.first }
 
   let(:client) { provider.autoscaling_client }
+  let(:ec2) { provider.ec2_client }
 
-  before(:each) { stub_autoscaling }
+  before(:each) { stub_autoscaling; stub_ec2 }
 
   it 'should be an instance of the ProviderV2' do
     expect(provider).to be_an_instance_of Puppet::Type::Ec2_launchconfiguration::ProviderV2
@@ -37,6 +38,7 @@ describe provider_class do
   describe 'running create' do
     it 'should request to create launch configuration' do
       client.expects(:create_launch_configuration).returns(true)
+      ec2.expects(:describe_security_groups).returns(stub(data: stub(security_groups: [])))
       expect(provider.create).to be_truthy
     end
   end
