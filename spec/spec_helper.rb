@@ -55,7 +55,7 @@ module EC2Helpers
 
   CLIENTS.each do |client|
     define_method("stub_#{client}") do
-      stub.tap do |s|
+      stub(client).tap do |s|
         provider.stubs(:"#{client}_client" => s)
         provider.class.stubs(:"#{client}_client" => s)
       end
