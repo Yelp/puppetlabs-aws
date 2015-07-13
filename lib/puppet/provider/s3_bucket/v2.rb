@@ -16,6 +16,8 @@ Puppet::Type.type(:s3_bucket).provide(:v2, :parent => PuppetX::Puppetlabs::Aws) 
     raise PuppetX::Puppetlabs::FetchingAWSDataError.new(default_region, self.resource_type.name.to_s, e.message)
   end
 
+  def self.reset_instances!; @instances = nil; end
+
   def instances
     self.class.instances
   end
@@ -36,14 +38,14 @@ Puppet::Type.type(:s3_bucket).provide(:v2, :parent => PuppetX::Puppetlabs::Aws) 
     Puppet.info("Creating S3 bucket #{name}")
     region = resource[:region]
     s3_client(region).create_bucket(bucket: name)
-    @property_hash.merge! region: region, name: name, ensure: :present
     instances << self
+    @property_hash.merge! region: region, name: name, ensure: :present
   end
 
   def destroy
     Puppet.info("Deleting S3 bucket #{name}")
     s3_client(resource[:region]).delete_bucket(bucket: name)
-    @property_hash[:ensure] = :absent
     instances.delete self
+    @property_hash[:ensure] = :absent
   end
 end
