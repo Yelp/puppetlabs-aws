@@ -11,8 +11,13 @@ Puppet::Type.type(:s3_bucket).provide(:v2, :parent => PuppetX::Puppetlabs::Aws) 
       location = s3_client.get_bucket_location(bucket: bucket.name).location_constraint
       location = 'us-east-1' if location == ''
 
-      policy = JSON.parse(
-        s3_client(location).get_bucket_policy(bucket: bucket.name).policy.read)
+      policy = begin
+        JSON.parse(
+          s3_client(location).get_bucket_policy(bucket: bucket.name).policy.read)
+      rescue Aws::S3::Errors::NoSuchBucketPolicy
+        :absent
+      end
+
       new(name: bucket.name, region: location, policy: policy, ensure: :present)
     end
   rescue StandardError => e
