@@ -1,10 +1,10 @@
 require 'spec_helper'
 
-describe Puppet::Type.type(:s3_bucket).provider(:v2) do
-  let(:resource) do
-    Puppet::Type.type(:s3_bucket).new(
-      name: 'test-web-sg', region: AWS_REGION)
-  end
+TYPE = Puppet::Type.type(:s3_bucket)
+
+describe TYPE.provider(:v2) do
+  let(:params) { { name: 'test-web-sg', region: AWS_REGION } }
+  let(:resource) { TYPE.new(params) }
   let(:provider) { resource.provider }
   let(:instance) { provider.class.instances.first }
   let(:s3) { provider.s3_client }
@@ -48,6 +48,36 @@ describe Puppet::Type.type(:s3_bucket).provider(:v2) do
       s3.expects(:delete_bucket).returns(true)
       provider.expects(:instances).returns([])
       expect(provider.destroy).to be_truthy
+    end
+  end
+
+  describe '#policy=' do
+    it 'creates policy' do
+      policy_example = [{'a' => 1}, {'b' => 2}]
+      s3.expects(:put_bucket_policy).
+        with(bucket: params[:name],
+             policy: JSON.dump('Statement' => policy_example)).
+        returns(true)
+      provider.policy = policy_example
+    end
+
+    it 'deletes policy if absent' do
+      s3.expects(:delete_bucket_policy).returns(true)
+      provider.expects(:policy).returns(true).twice
+      provider.policy = :absent
+    end
+  end
+
+  context 'with policy param' do
+    let(:params) { super().merge(policy: [{this_value_is_false: true}]) }
+
+    describe '#create' do
+      it 'passes policy to setter' do
+        s3.expects(:create_bucket).returns(true)
+        provider.class.expects(:instances).returns([])
+        provider.expects(:policy=).with([{this_value_is_false: true}]).returns(true)
+        provider.create
+      end
     end
   end
 end

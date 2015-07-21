@@ -47,8 +47,12 @@ Puppet::Type.type(:s3_bucket).provide(:v2, :parent => PuppetX::Puppetlabs::Aws) 
     Puppet.info("Creating S3 bucket #{name}")
     region = resource[:region]
     s3_client(region).create_bucket(bucket: name)
-    instances << self
-    @property_hash.merge! region: region, name: name, ensure: :present
+    self.policy = @resource[:policy]
+    self.instances << self
+    @property_hash.merge!(region: region,
+                          name: name,
+                          policy: policy,
+                          ensure: :present)
   end
 
   def destroy
@@ -59,11 +63,15 @@ Puppet::Type.type(:s3_bucket).provide(:v2, :parent => PuppetX::Puppetlabs::Aws) 
   end
 
   def policy=(value)
-    if value.reject{|e| e.to_s == 'absent'}.size == 0 # ffs puppet
-      s3_client(region).delete_bucket_policy(bucket: name)
+    return unless value
+
+    if value == :absent
+      if self.policy && self.policy != :absent
+        s3_client(region).delete_bucket_policy(bucket: name)
+      end
       @property_hash[:policy] = :absent
     else
-      policy = JSON.dump('Statement' => [value].flatten)
+      policy = JSON.dump('Statement' => value)
       s3_client(region).put_bucket_policy(bucket: name, policy: policy)
       @property_hash[:policy] = value
     end
