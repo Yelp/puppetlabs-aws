@@ -22,4 +22,8 @@ Puppet::Type.newtype(:s3_bucket) do
       fail 'region should be a String' unless value.is_a?(String)
     end
   end
+
+  newproperty(:policy) do
+    desc 'S3 bucket policy.'
+  end
 end

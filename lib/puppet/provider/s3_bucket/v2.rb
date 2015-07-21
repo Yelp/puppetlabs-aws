@@ -7,11 +7,14 @@ Puppet::Type.type(:s3_bucket).provide(:v2, :parent => PuppetX::Puppetlabs::Aws) 
 
   def self.instances
     Puppet.info("Fetching S3 buckets")
-    @instances ||= regions.map do |region|
-      s3_client(region).list_buckets.buckets.map do |bucket|
-        new(name: bucket.name, region: region, ensure: :present)
-      end
-    end.flatten
+    @instances ||= s3_client.list_buckets.buckets.map do |bucket|
+      location = s3_client.get_bucket_location(bucket: bucket.name).location_constraint
+      location = 'us-east-1' if location == ''
+
+      policy = JSON.parse(
+        s3_client(location).get_bucket_policy(bucket: bucket.name).policy.read)
+      new(name: bucket.name, region: location, policy: policy, ensure: :present)
+    end
   rescue StandardError => e
     raise PuppetX::Puppetlabs::FetchingAWSDataError.new(default_region, self.resource_type.name.to_s, e.message)
   end

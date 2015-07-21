@@ -15,6 +15,8 @@ describe Puppet::Type.type(:s3_bucket).provider(:v2) do
   describe '.prefetch' do
     it 'fetches resources' do
       s3.expects(:list_buckets).returns(stub(buckets: [stub(name: stub)]))
+      s3.expects(:get_bucket_location).returns(stub(location_constraint: ''))
+      s3.expects(:get_bucket_policy).returns(stub policy: StringIO.new("{}"))
       provider.class.instances
       provider.class.prefetch({})
     end
@@ -27,6 +29,8 @@ describe Puppet::Type.type(:s3_bucket).provider(:v2) do
 
     it 'truthy' do
       s3.expects(:list_buckets).returns(stub(buckets: [stub(name: stub)]))
+      s3.expects(:get_bucket_location).returns(stub(location_constraint: ''))
+      s3.expects(:get_bucket_policy).returns(stub policy: StringIO.new("{}"))
       expect(instance.exists?).to be_truthy
     end
   end
