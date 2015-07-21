@@ -23,7 +23,10 @@ Puppet::Type.newtype(:s3_bucket) do
     end
   end
 
-  newproperty(:policy) do
+  newproperty(:policy, array_matching: :all) do
     desc 'S3 bucket policy.'
+    validate do |value|
+      fail 'policy must be an Array or Hash' if !value.is_a?(Array) && !value.is_a?(Hash)
+    end
   end
 end
