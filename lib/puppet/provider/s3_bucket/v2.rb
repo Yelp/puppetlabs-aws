@@ -56,4 +56,14 @@ Puppet::Type.type(:s3_bucket).provide(:v2, :parent => PuppetX::Puppetlabs::Aws) 
     instances.delete self
     @property_hash[:ensure] = :absent
   end
+
+  def policy=(value)
+    if value.to_s == 'absent'
+      s3_client(region).delete_bucket_policy(bucket: name)
+      @property_hash[:policy] = :absent
+    else
+      s3_client(region).put_bucket_policy(bucket: name, policy: JSON.dump(value))
+      @property_hash[:policy] = value
+    end
+  end
 end
