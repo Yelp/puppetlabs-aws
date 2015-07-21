@@ -59,7 +59,7 @@ Puppet::Type.type(:s3_bucket).provide(:v2, :parent => PuppetX::Puppetlabs::Aws) 
   end
 
   def policy=(value)
-    if value.size == 0
+    if value.reject{|e| e.to_s == 'absent'}.size == 0 # ffs puppet
       s3_client(region).delete_bucket_policy(bucket: name)
       @property_hash[:policy] = :absent
     else
