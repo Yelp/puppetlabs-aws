@@ -65,7 +65,7 @@ Puppet::Type.type(:s3_bucket).provide(:v2, :parent => PuppetX::Puppetlabs::Aws) 
   def policy=(value)
     return unless value
 
-    if value == :absent
+    if [value].flatten == [:absent] # lol puppet what?
       if self.policy && self.policy != :absent
         s3_client(region).delete_bucket_policy(bucket: name)
       end
