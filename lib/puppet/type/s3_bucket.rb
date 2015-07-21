@@ -22,4 +22,19 @@ Puppet::Type.newtype(:s3_bucket) do
       fail 'region should be a String' unless value.is_a?(String)
     end
   end
+
+  newproperty(:policy, array_matching: :all) do
+    desc 'S3 bucket policy.'
+
+    validate do |value|
+      if value.to_s != 'absent' && !value.is_a?(Array) && !value.is_a?(Hash)
+        fail 'policy must be an Array, Hash or absent'
+      end
+    end
+
+    def mungea(value)
+      list = [value].flatten
+      list.map(&:to_s) == ['absent'] ? :absent : list
+    end
+  end
 end
