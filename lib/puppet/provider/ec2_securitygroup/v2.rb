@@ -80,7 +80,7 @@ Puppet::Type.type(:ec2_securitygroup).provide(:v2, :parent => PuppetX::Puppetlab
     Puppet.info("Creating security group #{name} in region #{resource[:region]}")
     ec2 = ec2_client(resource[:region])
     config = {
-      group_name: name,
+      group_name: resource[:group_name],
       description: resource[:description]
     }
 
