@@ -86,7 +86,7 @@ Puppet::Type.type(:ec2_securitygroup).provide(:v2, :parent => PuppetX::Puppetlab
   def create
     Puppet.info("Creating security group #{name} in region #{target_region}")
     config = {
-      group_name: name,
+      group_name: resource[:group_name],
       description: resource[:description]
     }
 
