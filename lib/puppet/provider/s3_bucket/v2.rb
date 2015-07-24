@@ -71,7 +71,7 @@ Puppet::Type.type(:s3_bucket).provide(:v2, :parent => PuppetX::Puppetlabs::Aws) 
       end
       @property_hash[:policy] = :absent
     else
-      policy = JSON.dump('Statement' => value)
+      policy = JSON.dump('Statement' => [value].flatten)
       s3_client(region).put_bucket_policy(bucket: name, policy: policy)
       @property_hash[:policy] = value
     end
