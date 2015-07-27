@@ -8,21 +8,29 @@ Puppet::Type.type(:s3_bucket).provide(:v2, :parent => PuppetX::Puppetlabs::Aws) 
   def self.instances
     Puppet.info("Fetching S3 buckets")
     @instances ||= s3_client.list_buckets.buckets.map do |bucket|
-      location = s3_client.get_bucket_location(bucket: bucket.name).location_constraint
+      location = begin
+        s3_client.get_bucket_location(bucket: bucket.name).location_constraint
+      rescue Aws::S3::Errors::AccessDenied
+        ''
+      end
       location = 'us-east-1' if location == ''
 
       policy = begin
         JSON.parse(
           s3_client(location).get_bucket_policy(bucket: bucket.name).policy.read
         )['Statement']
-      rescue Aws::S3::Errors::NoSuchBucketPolicy
+      rescue Aws::S3::Errors::NoSuchBucketPolicy, Aws::S3::Errors::AccessDenied
         :absent
       end
 
-      new(name: bucket.name, region: location, policy: policy, ensure: :present)
+      new(name: bucket.name,
+          region: location,
+          policy: policy,
+          ensure: :present)
     end
   rescue StandardError => e
-    raise PuppetX::Puppetlabs::FetchingAWSDataError.new(default_region, self.resource_type.name.to_s, e.message)
+    raise PuppetX::Puppetlabs::FetchingAWSDataError.new(
+      default_region, self.resource_type.name.to_s, e.message)
   end
 
   def self.reset_instances!; @instances = nil; end

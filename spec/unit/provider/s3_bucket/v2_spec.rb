@@ -20,6 +20,22 @@ describe TYPE.provider(:v2) do
       provider.class.instances
       provider.class.prefetch({})
     end
+
+    it 'ignores AccessDenied' do
+      s3.expects(:list_buckets).returns(stub(buckets: [stub(name: stub)]))
+      s3.expects(:get_bucket_location).raises(Aws::S3::Errors::AccessDenied.new(1, 2))
+      s3.expects(:get_bucket_policy).raises(Aws::S3::Errors::AccessDenied.new(1, 2))
+      provider.class.instances
+      provider.class.prefetch({})
+    end
+
+    it 'ignores NoSuchBucketPolicy' do
+      s3.expects(:list_buckets).returns(stub(buckets: [stub(name: stub)]))
+      s3.expects(:get_bucket_location).returns(stub(location_constraint: ''))
+      s3.expects(:get_bucket_policy).raises(Aws::S3::Errors::NoSuchBucketPolicy.new(1, 2))
+      provider.class.instances
+      provider.class.prefetch({})
+    end
   end
 
   describe '#exists?' do
@@ -75,7 +91,7 @@ describe TYPE.provider(:v2) do
       it 'passes policy to setter' do
         s3.expects(:create_bucket).returns(true)
         provider.class.expects(:instances).returns([])
-        provider.expects(:policy=).with([{this_value_is_false: true}]).returns(true)
+        provider.expects(:policy=).with([[{this_value_is_false: true}]]).returns(true)
         provider.create
       end
     end
