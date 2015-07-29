@@ -25,8 +25,7 @@ Puppet::Type.type(:s3_bucket).provide(:v2, :parent => PuppetX::Puppetlabs::Aws) 
 
       new(name: bucket.name,
           region: location,
-          policy: policy,
-          ensure: :present)
+          policy: policy)
     end
   rescue StandardError => e
     raise PuppetX::Puppetlabs::FetchingAWSDataError.new(
@@ -47,8 +46,7 @@ Puppet::Type.type(:s3_bucket).provide(:v2, :parent => PuppetX::Puppetlabs::Aws) 
   end
 
   def exists?
-    Puppet.info("Checking if S3 bucket #{name} exists")
-    @property_hash[:ensure] == :present
+    self.class.instances.include? self
   end
 
   def create
