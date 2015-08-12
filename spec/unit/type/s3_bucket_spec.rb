@@ -30,6 +30,12 @@ describe type_class do
     }.to raise_error(Puppet::Error, /region should not contain spaces/)
   end
 
+  it 'should accept blank region' do
+    expect do
+      no_region = type_class.new(name: 'name', region: '')
+    end.to_not raise_error
+  end
+
   %w{ name region }.each do |property|
     it "should require #{property} to be a string" do
       expect(type_class).to require_string_for(property)

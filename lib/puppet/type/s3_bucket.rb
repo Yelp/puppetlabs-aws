@@ -18,9 +18,10 @@ Puppet::Type.newtype(:s3_bucket) do
     desc 'The region in which to work with S3 buckets.'
     validate do |value|
       fail 'region should not contain spaces' if value =~ /\s/
-      fail 'region should not be blank' if value == ''
       fail 'region should be a String' unless value.is_a?(String)
     end
+
+    munge { |value| value == '' ? 'us-east-1' : value }
   end
 
   newproperty(:policy, array_matching: :all) do
