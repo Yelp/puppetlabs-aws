@@ -66,8 +66,8 @@ describe "ec2_securitygroup" do
         'cidr'     => '0.0.0.0/0'
       }]
       new_config = @config.dup.update({:ingress => new_rules})
-      success = apply(new_config)[:exit_status].success?
-      expect(success).to eq(false)
+      result = apply(new_config)
+      expect(result.exit_code).to eq(2)
 
       @group = get_group(@config[:name])
 
@@ -100,8 +100,8 @@ describe "ec2_securitygroup" do
       end
 
       it 'and should not fail to be applied multiple times' do
-        success = apply(@config_2)[:exit_status].success?
-        expect(success).to eq(true)
+        result = apply(@config_2)
+        expect(result.exit_code).to eq(0)
       end
     end
   end
@@ -153,7 +153,7 @@ describe "ec2_securitygroup" do
     end
 
     it 'and does not emit change notifications on a second run when the manifest ingress rule ordering does not match the one returned by AWS' do
-      output = apply[:output]
+      result = apply
       @group = get_group(@config[:name])
 
       # Puppet code not loaded, so can't call format_ingress_rules on ec2_securitygroup type
@@ -162,8 +162,7 @@ describe "ec2_securitygroup" do
       expect_rule_matches(@config[:ingress][0], @group[:ip_permissions][2])
 
       # should still be considered insync despite ordering differences
-      changed = output.any? { |l| l.match('ingress changed') }
-      expect(changed).to eq(false)
+      expect(result.stdout).not_to match(/ingress changed/)
     end
   end
 
@@ -364,9 +363,14 @@ describe "ec2_securitygroup" do
 
     rules_to_test.each_with_index do |rules, i|
       it "should be able to modify the ingress rules protocol and ports: #{i+1}" do
-        new_config  = @config.merge ingress: rules
-        exit_status = apply(new_config)[:exit_status]
-        expect(exit_status.exitstatus).to eq(2)
+        new_rules = []
+        rules.each do |rule|
+          rule[:security_group] = @name if rule.keys.include?(:security_group)
+          new_rules << rule
+        end
+        new_config = @config.dup.update({:ingress => new_rules})
+        result = apply(new_config)
+        expect(result.exit_code).to eq(2)
 
         @group = get_group(@config[:name])
 

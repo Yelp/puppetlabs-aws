@@ -40,6 +40,7 @@ describe TYPE.provider(:v2) do
 
   describe '#exists?' do
     it 'falsy' do
+      s3.expects(:list_buckets).returns(stub(buckets: []))
       expect(provider.exists?).to be_falsy
     end
 
