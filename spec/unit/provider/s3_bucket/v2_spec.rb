@@ -70,29 +70,35 @@ describe TYPE.provider(:v2) do
 
   describe '#policy=' do
     it 'creates policy' do
-      policy_example = [{'a' => 1}, {'b' => 2}]
+      policy_example = {'Statement' => [{'a' => 1}, {'b' => 2}]}
       s3.expects(:put_bucket_policy).
         with(bucket: params[:name],
-             policy: JSON.dump('Statement' => policy_example)).
+             policy: JSON.dump(policy_example)).
         returns(true)
       provider.policy = policy_example
     end
 
-    it 'deletes policy if absent' do
+    it 'deletes policy if present' do
       s3.expects(:delete_bucket_policy).returns(true)
-      provider.expects(:policy).returns(true).twice
-      provider.policy = :absent
+      provider.expects(:policy).returns({"Statement" => "hello"})
+      provider.policy = {}
+    end
+
+    it 'doesnt delete policy if absent' do
+      s3.expects(:delete_bucket_policy).never
+      provider.expects(:policy).returns({})
+      provider.policy = {}
     end
   end
 
   context 'with policy param' do
-    let(:params) { super().merge(policy: [{this_value_is_false: true}]) }
+    let(:params) { super().merge(policy: {"Statement" => [{this_value_is_false: true}]}) }
 
     describe '#create' do
       it 'passes policy to setter' do
         s3.expects(:create_bucket).returns(true)
         provider.class.expects(:instances).returns([])
-        provider.expects(:policy=).with([[{this_value_is_false: true}]]).returns(true)
+        provider.expects(:policy=).with("Statement" => [{this_value_is_false: true}]).returns(true)
         provider.create
       end
     end

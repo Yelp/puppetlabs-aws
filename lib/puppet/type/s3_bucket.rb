@@ -24,22 +24,11 @@ Puppet::Type.newtype(:s3_bucket) do
     munge { |value| value == '' ? 'us-east-1' : value }
   end
 
-  newproperty(:policy, array_matching: :all) do
+  newproperty(:policy) do
     desc 'S3 bucket policy.'
 
-    def insync?(is)
-      [is].flatten == [should].flatten # LOL puppet
-    end
-
     validate do |value|
-      if value.to_s != 'absent' && !value.is_a?(Array) && !value.is_a?(Hash)
-        fail 'policy must be an Array, Hash or absent'
-      end
-    end
-
-    munge do |value|
-      list = [value].flatten
-      list.map(&:to_s) == ['absent'] ? :absent : list
+      fail 'policy must be a Hash' unless value.is_a? Hash
     end
   end
 end

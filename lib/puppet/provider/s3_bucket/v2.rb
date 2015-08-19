@@ -18,9 +18,9 @@ Puppet::Type.type(:s3_bucket).provide(:v2, :parent => PuppetX::Puppetlabs::Aws) 
 
         policy = begin
           JSON.parse(s3_client(location).get_bucket_policy(
-            bucket: bucket.name).policy.read)['Statement']
+            bucket: bucket.name).policy.read)
         rescue Aws::S3::Errors::NoSuchBucketPolicy, Aws::S3::Errors::AccessDenied
-          :absent
+          {}
         end
 
         new(name: bucket.name,
@@ -72,15 +72,15 @@ Puppet::Type.type(:s3_bucket).provide(:v2, :parent => PuppetX::Puppetlabs::Aws) 
   def policy=(value)
     return unless value
 
-    if [value].flatten == [:absent] # lol puppet what?
-      if self.policy && self.policy != :absent
+    if value.empty?
+      if !self.policy.empty?
         s3_client(region).delete_bucket_policy(bucket: name)
       end
-      @property_hash[:policy] = :absent
     else
-      policy = JSON.dump('Statement' => [value].flatten)
+      policy = JSON.dump(value)
       s3_client(region).put_bucket_policy(bucket: name, policy: policy)
-      @property_hash[:policy] = value
     end
+
+    @property_hash[:policy] = value
   end
 end
