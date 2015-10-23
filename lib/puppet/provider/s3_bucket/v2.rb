@@ -47,7 +47,10 @@ Puppet::Type.type(:s3_bucket).provide(:v2, :parent => PuppetX::Puppetlabs::Aws) 
   end
 
   def exists?
-    self.class.instances.include? self
+    # Array#include? leads to Puppet::Provider#<=>, which does
+    # class name comparison. We need object_id comparison here,
+    # so use Kernel#eql? instead.
+    self.class.instances.find { |instance| instance.eql? self }
   end
 
   def create
