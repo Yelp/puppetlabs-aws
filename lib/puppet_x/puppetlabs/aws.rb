@@ -1,4 +1,9 @@
 require 'aws-sdk-core'
+begin
+  require 'aws-sdk-s3'
+  require 'aws-sdk-ec2'
+rescue Exception
+end
 
 module PuppetX
   module Puppetlabs
